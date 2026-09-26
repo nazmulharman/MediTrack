@@ -71,7 +71,7 @@ export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
               <SmartLogo size="md" colorScheme="clinical" showBeacon={false} />
               <div>
                 <h1 className="font-headline text-lg font-extrabold text-primary leading-tight">
-                  DoseKeeper Clinical Health Record
+                  MediTrack Clinical Health Record
                 </h1>
                 <p className="text-[11px] text-gray-500">
                   Generated: {new Date().toLocaleDateString('en-US', { dateStyle: 'full' })} • Smart Tracking Report

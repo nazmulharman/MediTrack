@@ -45,9 +45,9 @@ export default function App() {
   // Navigation
   const [currentTab, setCurrentTab] = useState<TabType>('today');
 
-  // Core Data with localStorage persistence
+  // Core Data with localStorage persistence (checks meditrack_* then legacy dosekeeper_*)
   const [profiles, setProfiles] = useState<PatientProfile[]>(() => {
-    const saved = localStorage.getItem('dosekeeper_profiles');
+    const saved = localStorage.getItem('meditrack_profiles') || localStorage.getItem('dosekeeper_profiles');
     return saved ? JSON.parse(saved) : INITIAL_PROFILES;
   });
 
@@ -56,37 +56,37 @@ export default function App() {
   });
 
   const [medicines, setMedicines] = useState<Medicine[]>(() => {
-    const saved = localStorage.getItem('dosekeeper_medicines');
+    const saved = localStorage.getItem('meditrack_medicines') || localStorage.getItem('dosekeeper_medicines');
     return saved ? JSON.parse(saved) : INITIAL_MEDICINES;
   });
 
   const [doses, setDoses] = useState<DoseItem[]>(() => {
-    const saved = localStorage.getItem('dosekeeper_doses');
+    const saved = localStorage.getItem('meditrack_doses') || localStorage.getItem('dosekeeper_doses');
     return saved ? JSON.parse(saved) : INITIAL_DOSES;
   });
 
   const [prescriptions, setPrescriptions] = useState<PrescriptionRecord[]>(() => {
-    const saved = localStorage.getItem('dosekeeper_prescriptions');
+    const saved = localStorage.getItem('meditrack_prescriptions') || localStorage.getItem('dosekeeper_prescriptions');
     return saved ? JSON.parse(saved) : INITIAL_PRESCRIPTIONS;
   });
 
   const [testReports, setTestReports] = useState<TestReport[]>(() => {
-    const saved = localStorage.getItem('dosekeeper_reports');
+    const saved = localStorage.getItem('meditrack_reports') || localStorage.getItem('dosekeeper_reports');
     return saved ? JSON.parse(saved) : INITIAL_TEST_REPORTS;
   });
 
   const [visits, setVisits] = useState<DoctorVisit[]>(() => {
-    const saved = localStorage.getItem('dosekeeper_visits');
+    const saved = localStorage.getItem('meditrack_visits') || localStorage.getItem('dosekeeper_visits');
     return saved ? JSON.parse(saved) : INITIAL_VISITS;
   });
 
   const [vitals, setVitals] = useState<HealthVitalLog[]>(() => {
-    const saved = localStorage.getItem('dosekeeper_vitals');
+    const saved = localStorage.getItem('meditrack_vitals') || localStorage.getItem('dosekeeper_vitals');
     return saved ? JSON.parse(saved) : INITIAL_VITALS;
   });
 
   const [settings, setSettings] = useState<NotificationSettings>(() => {
-    const saved = localStorage.getItem('dosekeeper_settings');
+    const saved = localStorage.getItem('meditrack_settings') || localStorage.getItem('dosekeeper_settings');
     return saved ? JSON.parse(saved) : INITIAL_SETTINGS;
   });
 
@@ -119,35 +119,35 @@ export default function App() {
 
   // Sync to localStorage
   useEffect(() => {
-    localStorage.setItem('dosekeeper_profiles', JSON.stringify(profiles));
+    localStorage.setItem('meditrack_profiles', JSON.stringify(profiles));
   }, [profiles]);
 
   useEffect(() => {
-    localStorage.setItem('dosekeeper_medicines', JSON.stringify(medicines));
+    localStorage.setItem('meditrack_medicines', JSON.stringify(medicines));
   }, [medicines]);
 
   useEffect(() => {
-    localStorage.setItem('dosekeeper_doses', JSON.stringify(doses));
+    localStorage.setItem('meditrack_doses', JSON.stringify(doses));
   }, [doses]);
 
   useEffect(() => {
-    localStorage.setItem('dosekeeper_prescriptions', JSON.stringify(prescriptions));
+    localStorage.setItem('meditrack_prescriptions', JSON.stringify(prescriptions));
   }, [prescriptions]);
 
   useEffect(() => {
-    localStorage.setItem('dosekeeper_reports', JSON.stringify(testReports));
+    localStorage.setItem('meditrack_reports', JSON.stringify(testReports));
   }, [testReports]);
 
   useEffect(() => {
-    localStorage.setItem('dosekeeper_visits', JSON.stringify(visits));
+    localStorage.setItem('meditrack_visits', JSON.stringify(visits));
   }, [visits]);
 
   useEffect(() => {
-    localStorage.setItem('dosekeeper_vitals', JSON.stringify(vitals));
+    localStorage.setItem('meditrack_vitals', JSON.stringify(vitals));
   }, [vitals]);
 
   useEffect(() => {
-    localStorage.setItem('dosekeeper_settings', JSON.stringify(settings));
+    localStorage.setItem('meditrack_settings', JSON.stringify(settings));
   }, [settings]);
 
   // Check course stop reminders once on mount

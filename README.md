@@ -1,6 +1,6 @@
 # MediTrack - Smart Medicine Dosage & Course Tracker
 
-MediTrack (DoseKeeper) is an intelligent medicine schedule, dosage course, adherence tracking, and health vault application.
+MediTrack is an intelligent medicine schedule, dosage course, adherence tracking, and health vault application.
 
 ## Features
 - **Smart Logo & Health Identity**: Dynamic pulse and medication shield icon design with high-resolution vector branding.

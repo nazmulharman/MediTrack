@@ -340,7 +340,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             <SmartLogo size="md" showBeacon={true} pulseAnimated={true} />
             <div className="min-w-0">
               <h4 className="font-headline font-extrabold text-xs text-on-surface truncate">
-                DoseKeeper Smart Emblem
+                MediTrack Smart Emblem
               </h4>
               <p className="text-[11px] text-on-surface-variant line-clamp-1">
                 3D Precision Capsule • Telemetry Pulse • Vault Shield

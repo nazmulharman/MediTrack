@@ -57,7 +57,7 @@ export const SmartLogoModal: React.FC<SmartLogoModalProps> = ({ isOpen, onClose 
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `dosekeeper-smart-logo-${selectedScheme}.svg`;
+    link.download = `meditrack-smart-logo-${selectedScheme}.svg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -92,7 +92,7 @@ export const SmartLogoModal: React.FC<SmartLogoModalProps> = ({ isOpen, onClose 
         const pngUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.href = pngUrl;
-        link.download = `dosekeeper-smart-logo-${selectedScheme}-1024px.png`;
+        link.download = `meditrack-smart-logo-${selectedScheme}-1024px.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -130,7 +130,7 @@ export const SmartLogoModal: React.FC<SmartLogoModalProps> = ({ isOpen, onClose 
                 Smart Logo & Brand System
               </h3>
               <p className="text-[11px] text-on-surface-variant">
-                DoseKeeper intelligent visual identity
+                MediTrack intelligent visual identity
               </p>
             </div>
           </div>
@@ -161,7 +161,7 @@ export const SmartLogoModal: React.FC<SmartLogoModalProps> = ({ isOpen, onClose 
 
             <div className="text-center mt-3 z-10">
               <h2 className="font-headline font-extrabold text-2xl text-on-surface tracking-tight flex items-center justify-center gap-2">
-                DoseKeeper
+                MediTrack
                 <span className="text-xs px-2 py-0.5 rounded-full bg-primary text-on-primary font-bold">
                   v2.5 Smart
                 </span>

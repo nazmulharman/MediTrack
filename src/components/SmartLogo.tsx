@@ -22,7 +22,7 @@ export const SmartLogo: React.FC<SmartLogoProps> = ({
   pulseAnimated = true,
   className = '',
   onClick,
-  title = 'DoseKeeper',
+  title = 'MediTrack',
   subtitle = 'Smart Dosage & Vault',
 }) => {
   // Dimension calculation
@@ -128,7 +128,7 @@ export const SmartLogo: React.FC<SmartLogoProps> = ({
       xmlns="http://www.w3.org/2000/svg"
       className="shrink-0 select-none drop-shadow-md transition-transform duration-300 group-hover:scale-105"
       role="img"
-      aria-label="DoseKeeper Smart Logo"
+      aria-label="MediTrack Smart Logo"
     >
       <defs>
         {/* Background container gradient */}
