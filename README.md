@@ -1,11 +1,31 @@
-<div align="center">
+# MediTrack - Smart Medicine Dosage & Course Tracker
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+MediTrack (DoseKeeper) is an intelligent medicine schedule, dosage course, adherence tracking, and health vault application.
 
-  <h1>Built with AI Studio</h2>
+## Features
+- **Smart Logo & Health Identity**: Dynamic pulse and medication shield icon design with high-resolution vector branding.
+- **Medication Schedule & Reminders**: Real-time daily dose schedules, status tracking (Taken, Missed, Snoozed).
+- **Course & Adherence Analytics**: Track medication adherence percentages, completion rates, and historical logs.
+- **Inventory & Refill Alerts**: Low stock notifications and expiry tracking.
+- **Health Vault**: Keep prescriptions and medical notes securely organized.
+- **Modern Responsive UI**: Built with React, Tailwind CSS, Lucide Icons, and TypeScript.
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## Quick Start
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+### Installation
+```bash
+npm install
+```
 
-</div>
+### Development Server
+```bash
+npm run dev
+```
+
+### Production Build
+```bash
+npm run build
+```
+
+## Repository
+- **Remote**: https://github.com/nazmulharman/MediTrack.git

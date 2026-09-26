@@ -1,0 +1,6 @@
+{
+  "name": "DoseKeeper - Medicine Dosage & Course Tracker",
+  "description": "A personal medicine companion that tracks dosage schedules, stock levels, and expiry while keeping prescriptions and test reports in an encrypted vault.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
