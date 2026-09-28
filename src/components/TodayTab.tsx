@@ -23,6 +23,7 @@ interface TodayTabProps {
   onOpenExportCalendar?: () => void;
   onContactDoctor?: (med: Medicine) => void;
   onRequestRenewal?: (med: Medicine) => void;
+  onOpenEditProfile?: (profile?: PatientProfile) => void;
 }
 
 export const TodayTab: React.FC<TodayTabProps> = ({
@@ -46,6 +47,7 @@ export const TodayTab: React.FC<TodayTabProps> = ({
   onOpenExportCalendar,
   onContactDoctor,
   onRequestRenewal,
+  onOpenEditProfile,
 }) => {
   // Alert dismiss states
   const [dismissRefillAlert, setDismissRefillAlert] = useState(false);
@@ -115,54 +117,92 @@ export const TodayTab: React.FC<TodayTabProps> = ({
       {/* Profile Switching Segmented Pills */}
       <section aria-label="Care Profiles" className="flex flex-col space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
-            Active Patient
-          </span>
-          <button
-            onClick={onOpenProfilesModal}
-            className="inline-flex items-center gap-1 text-xs text-primary font-bold hover:opacity-80 active:scale-95 transition-all"
-            type="button"
-          >
-            <span className="material-symbols-outlined text-[16px]">group_add</span>
-            <span>Manage</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+              Care Profile
+            </span>
+            {activeProfile.age !== undefined && (
+              <span className="text-[11px] font-semibold text-primary">
+                ({activeProfile.age} yrs)
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5">
+            {onOpenEditProfile && (
+              <button
+                onClick={() => onOpenEditProfile(activeProfile)}
+                className="inline-flex items-center gap-1 text-xs text-secondary font-bold hover:opacity-80 active:scale-95 transition-all"
+                type="button"
+                title="Edit Current Profile"
+              >
+                <span className="material-symbols-outlined text-[15px]">edit</span>
+                <span>Edit Profile</span>
+              </button>
+            )}
+            <button
+              onClick={() => (onOpenEditProfile ? onOpenEditProfile() : onOpenProfilesModal())}
+              className="inline-flex items-center gap-1 text-xs text-primary font-bold hover:opacity-80 active:scale-95 transition-all"
+              type="button"
+            >
+              <span className="material-symbols-outlined text-[15px]">add</span>
+              <span>Add Member</span>
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar -mx-4 px-4">
           {profiles.map((profile) => {
             const isActive = profile.id === activeProfile.id;
             return (
-              <button
+              <div
                 key={profile.id}
-                onClick={() => onSelectProfile(profile)}
-                type="button"
-                className={`flex items-center gap-2 h-10 pl-1.5 pr-4 rounded-full shrink-0 transition-transform active:scale-95 ${
+                className={`flex items-center gap-1 h-10 pl-1.5 pr-2.5 rounded-full shrink-0 transition-transform active:scale-98 ${
                   isActive
                     ? 'bg-primary text-on-primary shadow-sm font-semibold'
                     : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container'
                 }`}
               >
-                {profile.avatarUrl ? (
-                  <img
-                    alt={profile.name}
-                    className="w-7 h-7 rounded-full object-cover"
-                    src={profile.avatarUrl}
-                  />
-                ) : (
-                  <span className="w-7 h-7 rounded-full bg-secondary-fixed text-on-secondary-fixed font-bold text-[11px] flex items-center justify-center">
-                    {profile.initials}
-                  </span>
+                <button
+                  onClick={() => onSelectProfile(profile)}
+                  type="button"
+                  className="flex items-center gap-2 focus:outline-none"
+                >
+                  {profile.avatarUrl ? (
+                    <img
+                      alt={profile.name}
+                      className="w-7 h-7 rounded-full object-cover"
+                      src={profile.avatarUrl}
+                    />
+                  ) : (
+                    <span className={`w-7 h-7 rounded-full font-bold text-[11px] flex items-center justify-center ${profile.badgeColor || 'bg-secondary-fixed text-on-secondary-fixed'}`}>
+                      {profile.initials}
+                    </span>
+                  )}
+                  <span className="text-xs font-semibold">{profile.shortName || profile.name}</span>
+                  {profile.age !== undefined && (
+                    <span className="text-[10px] opacity-75">
+                      {profile.age}y
+                    </span>
+                  )}
+                </button>
+                {onOpenEditProfile && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenEditProfile(profile);
+                    }}
+                    type="button"
+                    title={`Edit ${profile.name}`}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ml-0.5 ${
+                      isActive
+                        ? 'text-white/80 hover:text-white hover:bg-white/20'
+                        : 'text-outline hover:text-primary hover:bg-surface-container-high'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[13px]">edit</span>
+                  </button>
                 )}
-                <span className="text-xs font-semibold">{profile.name}</span>
-                {isActive && (
-                  <span className="inline-flex items-center justify-center px-1.5 py-0.2 rounded-full bg-primary-fixed text-on-primary-fixed text-[10px] font-bold">
-                    {takenDoses}/{totalDoses}
-                  </span>
-                )}
-                {profile.hasAlerts && !isActive && (
-                  <span className="w-2 h-2 rounded-full bg-error shrink-0" />
-                )}
-              </button>
+              </div>
             );
           })}
         </div>

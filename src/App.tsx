@@ -40,6 +40,7 @@ import { VitalsModal } from './components/VitalsModal';
 import { SmartLogoModal } from './components/SmartLogoModal';
 import { GoogleDriveModal } from './components/GoogleDriveModal';
 import { CourseRenewalModal } from './components/CourseRenewalModal';
+import { EditProfileModal } from './components/EditProfileModal';
 import { useNotificationScheduler } from './hooks/useNotificationScheduler';
 import { notificationService, ActiveCourseAlert } from './services/notificationService';
 import { roundFraction, formatFraction } from './utils/fractionUtils';
@@ -221,6 +222,59 @@ export default function App() {
   const [isSmartLogoOpen, setIsSmartLogoOpen] = useState(false);
   const [googleUser, setGoogleUser] = useState<User | null>(null);
   const [isGoogleDriveOpen, setIsGoogleDriveOpen] = useState(false);
+
+  // Profile Management State
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<PatientProfile | null>(null);
+
+  const handleOpenEditProfile = (profileToEdit?: PatientProfile) => {
+    setEditingProfile(profileToEdit || null);
+    setIsEditProfileOpen(true);
+  };
+
+  const handleSaveProfile = (savedProfile: PatientProfile) => {
+    setProfiles((prev) => {
+      const exists = prev.some((p) => p.id === savedProfile.id);
+      let updated: PatientProfile[];
+      if (exists) {
+        updated = prev.map((p) => (p.id === savedProfile.id ? savedProfile : p));
+      } else {
+        updated = [...prev, savedProfile];
+      }
+      if (savedProfile.isPrimary) {
+        updated = updated.map((p) => (p.id === savedProfile.id ? p : { ...p, isPrimary: false }));
+      }
+      return updated;
+    });
+
+    if (activeProfile.id === savedProfile.id || savedProfile.isPrimary) {
+      setActiveProfile(savedProfile);
+    }
+
+    setGalleryToast({
+      message: `Profile "${savedProfile.name}" saved!`,
+      subMessage: savedProfile.age ? `Age ${savedProfile.age} yrs • ${savedProfile.relationLabel}` : undefined,
+      show: true,
+    });
+    setTimeout(() => setGalleryToast(null), 3500);
+  };
+
+  const handleDeleteProfile = (profileId: string) => {
+    setProfiles((prev) => {
+      const remaining = prev.filter((p) => p.id !== profileId);
+      if (activeProfile.id === profileId && remaining.length > 0) {
+        setActiveProfile(remaining[0]);
+      }
+      return remaining;
+    });
+
+    setGalleryToast({
+      message: 'Profile removed',
+      show: true,
+    });
+    setTimeout(() => setGalleryToast(null), 3000);
+  };
+
   const [courseRenewalState, setCourseRenewalState] = useState<{
     isOpen: boolean;
     medicine: Medicine | null;
@@ -672,7 +726,7 @@ export default function App() {
       <Header
         currentTab={currentTab}
         activeProfile={activeProfile}
-        onOpenProfiles={() => setCurrentTab('settings')}
+        onOpenProfiles={() => handleOpenEditProfile(activeProfile)}
         onOpenSmartLogo={() => setIsSmartLogoOpen(true)}
         onOpenGoogleDrive={() => setIsGoogleDriveOpen(true)}
         googleUser={googleUser}
@@ -739,6 +793,7 @@ export default function App() {
             activeProfile={activeProfile}
             onSelectProfile={setActiveProfile}
             onOpenProfilesModal={() => setCurrentTab('settings')}
+            onOpenEditProfile={handleOpenEditProfile}
             doses={currentProfileDoses}
             medicines={medicines}
             vitals={vitals}
@@ -851,7 +906,9 @@ export default function App() {
             profiles={profiles}
             activeProfile={activeProfile}
             onSelectProfile={setActiveProfile}
-            onAddProfile={(newP) => setProfiles((prev) => [...prev, newP])}
+            onAddProfile={(newP) => handleSaveProfile(newP)}
+            onEditProfile={handleOpenEditProfile}
+            onOpenAddProfile={() => handleOpenEditProfile()}
             settings={settings}
             onUpdateSettings={setSettings}
             onResetData={handleResetData}
@@ -1080,6 +1137,18 @@ export default function App() {
         initialMode={courseRenewalState.initialMode}
         onRenewCourse={handleRenewCourse}
       />
+
+      {/* Edit Profile & Add Family Member Modal */}
+      {isEditProfileOpen && (
+        <EditProfileModal
+          isOpen={isEditProfileOpen}
+          onClose={() => setIsEditProfileOpen(false)}
+          profile={editingProfile}
+          onSaveProfile={handleSaveProfile}
+          onDeleteProfile={handleDeleteProfile}
+          isOnlyProfile={profiles.length <= 1}
+        />
+      )}
     </div>
   );
 }

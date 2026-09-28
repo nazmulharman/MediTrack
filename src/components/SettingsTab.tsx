@@ -12,6 +12,8 @@ interface SettingsTabProps {
   activeProfile: PatientProfile;
   onSelectProfile: (profile: PatientProfile) => void;
   onAddProfile: (profile: PatientProfile) => void;
+  onEditProfile?: (profile: PatientProfile) => void;
+  onOpenAddProfile?: () => void;
   settings: NotificationSettings;
   onUpdateSettings: (settings: NotificationSettings) => void;
   onResetData: () => void;
@@ -31,6 +33,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   activeProfile,
   onSelectProfile,
   onAddProfile,
+  onEditProfile,
+  onOpenAddProfile,
   settings,
   onUpdateSettings,
   onResetData,
@@ -104,107 +108,119 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-[20px]">group</span>
-            <h3 className="font-headline font-bold text-sm text-on-surface">Family Profiles</h3>
+            <div>
+              <h3 className="font-headline font-bold text-sm text-on-surface">Family & Care Profiles</h3>
+              <p className="text-[11px] text-on-surface-variant font-medium">Add members, update avatar photos & ages</p>
+            </div>
           </div>
           <button
-            onClick={() => setShowAddMember(true)}
-            className="text-xs text-primary font-bold flex items-center gap-0.5 hover:underline"
+            onClick={() => {
+              if (onOpenAddProfile) {
+                onOpenAddProfile();
+              } else {
+                setShowAddMember(true);
+              }
+            }}
+            className="text-xs text-primary font-bold flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
             type="button"
           >
-            <span className="material-symbols-outlined text-[16px]">add</span>
-            Add Member
+            <span className="material-symbols-outlined text-[16px]">person_add</span>
+            <span>Add Member</span>
           </button>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {profiles.map((p) => {
             const isSelected = p.id === activeProfile.id;
             return (
               <div
                 key={p.id}
-                onClick={() => onSelectProfile(p)}
-                className={`p-3 rounded-2xl flex items-center justify-between cursor-pointer transition-all border ${
+                className={`p-3.5 rounded-2xl flex items-center justify-between transition-all border ${
                   isSelected
-                    ? 'bg-secondary-fixed/30 border-primary/30'
-                    : 'bg-surface-container-low border-transparent hover:bg-surface-container'
+                    ? 'bg-secondary-fixed/20 border-primary/40 shadow-xs'
+                    : 'bg-surface-container-low border-surface-container hover:bg-surface-container/60'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  {p.avatarUrl ? (
-                    <img
-                      src={p.avatarUrl}
-                      alt={p.name}
-                      className="w-9 h-9 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="w-9 h-9 rounded-full bg-primary-fixed text-on-primary-fixed font-bold text-xs flex items-center justify-center">
-                      {p.initials}
-                    </span>
-                  )}
-                  <div>
-                    <h4 className="font-headline font-bold text-xs text-on-surface">{p.name}</h4>
-                    <p className="text-[11px] text-on-surface-variant">
-                      {p.relationLabel || 'Dependent'} {p.age ? `• ${p.age} yrs` : ''}
-                    </p>
+                <div
+                  onClick={() => onSelectProfile(p)}
+                  className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                >
+                  <div className="relative shrink-0">
+                    {p.avatarUrl ? (
+                      <img
+                        src={p.avatarUrl}
+                        alt={p.name}
+                        className="w-11 h-11 rounded-full object-cover ring-2 ring-primary/20 shadow-xs"
+                      />
+                    ) : (
+                      <span className={`w-11 h-11 rounded-full font-bold text-xs flex items-center justify-center shadow-xs ${p.badgeColor || 'bg-primary-fixed text-on-primary-fixed'}`}>
+                        {p.initials}
+                      </span>
+                    )}
+                    {p.isPrimary && (
+                      <span
+                        title="Primary Caregiver / Account Owner"
+                        className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-primary text-on-primary text-[10px] font-bold flex items-center justify-center border border-white shadow-xs"
+                      >
+                        ★
+                      </span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h4 className="font-headline font-bold text-sm text-on-surface truncate">{p.name}</h4>
+                      {isSelected && (
+                        <span className="px-2 py-0.2 rounded-full bg-primary text-on-primary text-[10px] font-bold">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-on-surface-variant flex-wrap mt-0.5">
+                      <span className="font-medium text-primary">
+                        {p.relationLabel || (p.relation ? p.relation.charAt(0).toUpperCase() + p.relation.slice(1) : 'Dependent')}
+                      </span>
+                      {p.age !== undefined && (
+                        <>
+                          <span className="text-outline-variant">•</span>
+                          <span className="font-semibold text-on-surface">Age: {p.age} yrs</span>
+                        </>
+                      )}
+                      {p.weightKg !== undefined && (
+                        <>
+                          <span className="text-outline-variant">•</span>
+                          <span>{p.weightKg} kg</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  {isSelected ? (
-                    <span className="px-2.5 py-0.5 rounded-full bg-primary text-on-primary text-[10px] font-bold">
-                      Active
-                    </span>
-                  ) : (
-                    <span className="text-xs text-outline font-semibold">Switch</span>
+                <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                  {!isSelected && (
+                    <button
+                      onClick={() => onSelectProfile(p)}
+                      type="button"
+                      className="px-2.5 py-1.5 rounded-full text-xs text-on-surface-variant font-semibold hover:bg-surface-container transition-colors"
+                    >
+                      Switch
+                    </button>
+                  )}
+                  {onEditProfile && (
+                    <button
+                      onClick={() => onEditProfile(p)}
+                      type="button"
+                      title={`Edit ${p.name}`}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high hover:bg-primary hover:text-on-primary text-primary text-xs font-bold transition-all border border-primary/20 shadow-2xs active:scale-95"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">edit</span>
+                      <span>Edit</span>
+                    </button>
                   )}
                 </div>
               </div>
             );
           })}
         </div>
-
-        {/* Add Member Drawer */}
-        {showAddMember && (
-          <div className="p-3.5 rounded-2xl bg-surface-container-high/50 border border-primary/20 space-y-3 animate-in fade-in duration-150">
-            <h4 className="text-xs font-bold text-on-surface">New Dependent or Family Member</h4>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="Name (e.g. Grandma Rose)"
-                className="flex-1 px-3 py-2 rounded-xl bg-surface-container-lowest text-xs font-semibold text-on-surface focus:outline-none"
-              />
-              <select
-                value={newRelation}
-                onChange={(e) => setNewRelation(e.target.value as any)}
-                aria-label="Family relation"
-                className="px-2.5 py-2 rounded-xl bg-surface-container-lowest text-xs font-semibold text-on-surface focus:outline-none"
-              >
-                <option value="child">Child</option>
-                <option value="parent">Parent</option>
-                <option value="spouse">Spouse</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div className="flex justify-end gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => setShowAddMember(false)}
-                className="px-3 py-1 rounded-full text-xs font-semibold text-on-surface-variant"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleCreateProfile}
-                className="px-4 py-1 rounded-full bg-primary text-on-primary text-xs font-bold shadow-sm"
-              >
-                Save Member
-              </button>
-            </div>
-          </div>
-        )}
       </section>
 
       {/* Google Account & Google Drive Cloud Storage Section */}
