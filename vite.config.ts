@@ -14,7 +14,7 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        manifestFilename: 'manifest.webmanifest',
+        manifestFilename: 'manifest.json',
         includeAssets: [
           'favicon.ico',
           'apple-touch-icon.png',
@@ -36,6 +36,7 @@ export default defineConfig(() => {
           scope: '/',
           categories: ['medical', 'health', 'lifestyle'],
           lang: 'en',
+          dir: 'ltr',
           icons: [
             {
               src: '/pwa-192x192.png',
@@ -54,6 +55,29 @@ export default defineConfig(() => {
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable',
+            },
+          ],
+          shortcuts: [
+            {
+              name: "Today's Schedule",
+              short_name: 'Schedule',
+              description: "View today's medicine doses and timings",
+              url: '/?tab=schedule',
+              icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }],
+            },
+            {
+              name: 'Medicine Inventory',
+              short_name: 'Inventory',
+              description: 'Check current stock levels and expiry dates',
+              url: '/?tab=inventory',
+              icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }],
+            },
+            {
+              name: 'Medical Vault',
+              short_name: 'Vault',
+              description: 'Access encrypted prescriptions and reports',
+              url: '/?tab=vault',
+              icons: [{ src: '/pwa-192x192.png', sizes: '192x192' }],
             },
           ],
         },
@@ -91,8 +115,7 @@ export default defineConfig(() => {
           ],
         },
         devOptions: {
-          enabled: true,
-          type: 'module',
+          enabled: false,
         },
       }),
     ],

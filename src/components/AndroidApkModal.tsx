@@ -12,8 +12,12 @@ export const AndroidApkModal: React.FC<AndroidApkModalProps> = ({ isOpen, onClos
 
   if (!isOpen) return null;
 
-  const appUrl = 'https://ais-pre-hpresemu5benx7qvjgmpo3-865246501235.asia-southeast1.run.app';
-  const manifestUrl = `${appUrl}/manifest.webmanifest`;
+  // Use current origin if running on custom host (like Vercel), fallback to default
+  const currentOrigin = typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost')
+    ? window.location.origin
+    : 'https://ais-pre-hpresemu5benx7qvjgmpo3-865246501235.asia-southeast1.run.app';
+  const appUrl = currentOrigin;
+  const manifestUrl = `${appUrl}/manifest.json`;
   const pwaBuilderUrl = `https://www.pwabuilder.com/reportcard?site=${encodeURIComponent(appUrl)}`;
 
   const bubblewrapCmd = `npm i -g @bubblewrap/cli
@@ -42,9 +46,13 @@ Key Features:
   };
 
   const handleDownloadTwaConfig = () => {
+    const hostName = typeof window !== 'undefined' && window.location.host && !window.location.host.includes('localhost')
+      ? window.location.host
+      : 'ais-pre-hpresemu5benx7qvjgmpo3-865246501235.asia-southeast1.run.app';
+
     const config = {
       packageId: 'app.meditrack.twa',
-      host: 'ais-pre-hpresemu5benx7qvjgmpo3-865246501235.asia-southeast1.run.app',
+      host: hostName,
       name: 'MediTrack - Medicine Tracker',
       launcherName: 'MediTrack',
       themeColor: '#00685F',

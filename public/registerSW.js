@@ -1,14 +1,10 @@
-import {StrictMode} from 'react';
-import {createRoot} from 'react-dom/client';
-import App from './App.tsx';
-import './index.css';
-
-// Register PWA Service Worker
+// PWA Service Worker Registration & Offline support
 if ('serviceWorker' in navigator && !window.location.host.includes('localhost:5173')) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })
       .then((registration) => {
+        // Log service worker registration success
         if (registration.installing) {
           console.debug('Service Worker installing');
         } else if (registration.waiting) {
@@ -17,14 +13,8 @@ if ('serviceWorker' in navigator && !window.location.host.includes('localhost:51
           console.debug('Service Worker active');
         }
       })
-      .catch((err) => {
-        console.warn('SW registration failed:', err);
+      .catch((error) => {
+        console.warn('Service worker registration failed:', error);
       });
   });
 }
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
