@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { User } from 'firebase/auth';
 import { PatientProfile, NotificationSettings } from '../types/medicine';
 import { notificationService } from '../services/notificationService';
 import { SmartLogo } from './SmartLogo';
 import { SmartLogoModal } from './SmartLogoModal';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface SettingsTabProps {
   profiles: PatientProfile[];
@@ -13,8 +15,14 @@ interface SettingsTabProps {
   onUpdateSettings: (settings: NotificationSettings) => void;
   onResetData: () => void;
   onExportData: () => void;
+  onExportCalendar?: () => void;
   onTestNotification?: () => void;
+  onTestCourseNotification?: () => void;
   onOpenSmartLogo?: () => void;
+  onOpenGoogleDrive?: () => void;
+  googleUser?: User | null;
+  onGoogleSignIn?: () => void;
+  onGoogleSignOut?: () => void;
 }
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({
@@ -26,8 +34,14 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   onUpdateSettings,
   onResetData,
   onExportData,
+  onExportCalendar,
   onTestNotification,
+  onTestCourseNotification,
   onOpenSmartLogo,
+  onOpenGoogleDrive,
+  googleUser,
+  onGoogleSignIn,
+  onGoogleSignOut,
 }) => {
   const [appLockEnabled, setAppLockEnabled] = useState(true);
   const [showAddMember, setShowAddMember] = useState(false);
@@ -191,6 +205,140 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
         )}
       </section>
 
+      {/* Google Account & Google Drive Cloud Storage Section */}
+      <section className="rounded-3xl bg-surface-container-lowest p-4 border border-surface-container shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {/* Google Drive SVG */}
+            <svg className="w-5 h-5 shrink-0" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+              <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+              <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44c-.8 1.4-1.2 2.95-1.2 4.5h27.5z" fill="#00ac47"/>
+              <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
+              <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+              <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+              <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+            </svg>
+            <div>
+              <h3 className="font-headline font-bold text-sm text-on-surface">
+                Google Drive Cloud Storage
+              </h3>
+              <p className="text-[11px] text-on-surface-variant font-medium">
+                Log in with Google to backup & sync medication records
+              </p>
+            </div>
+          </div>
+          <span
+            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+              googleUser
+                ? 'bg-secondary-fixed text-on-secondary-fixed-variant'
+                : 'bg-surface-container text-on-surface-variant'
+            }`}
+          >
+            {googleUser ? 'Connected' : 'Offline'}
+          </span>
+        </div>
+
+        {googleUser ? (
+          <div className="p-3.5 rounded-2xl bg-surface-container-low border border-surface-container space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                {googleUser.photoURL ? (
+                  <img
+                    src={googleUser.photoURL}
+                    alt={googleUser.displayName || 'Google User'}
+                    className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-primary-fixed text-on-primary-fixed font-bold text-sm flex items-center justify-center">
+                    {(googleUser.displayName || googleUser.email || 'G').slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <h4 className="font-headline font-bold text-xs text-on-surface">
+                    {googleUser.displayName || 'Google User'}
+                  </h4>
+                  <p className="text-[11px] text-on-surface-variant">{googleUser.email}</p>
+                </div>
+              </div>
+
+              {onGoogleSignOut && (
+                <button
+                  type="button"
+                  onClick={onGoogleSignOut}
+                  className="px-3 py-1 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-semibold transition-colors"
+                >
+                  Sign Out
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 pt-1 border-t border-surface-container">
+              {onOpenGoogleDrive && (
+                <button
+                  type="button"
+                  onClick={onOpenGoogleDrive}
+                  className="flex-1 py-2 px-3 rounded-xl bg-primary text-on-primary text-xs font-bold shadow-xs hover:bg-primary-container active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[16px]">cloud_sync</span>
+                  Open Cloud Vault & Backups
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="p-3.5 rounded-2xl bg-surface-container-low border border-surface-container space-y-3">
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              Connect your Google Account to preserve your dosage history, prescriptions, and health vitals in your personal Google Drive with permission from the app's users.
+            </p>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onGoogleSignIn || onOpenGoogleDrive}
+                className="flex-1 py-2 px-3 rounded-xl bg-white text-gray-800 text-xs font-bold border border-gray-300 shadow-2xs hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
+                {/* Official Google G Logo SVG */}
+                <svg
+                  version="1.1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 48 48"
+                  className="w-4 h-4 shrink-0"
+                >
+                  <path
+                    fill="#EA4335"
+                    d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                  />
+                  <path
+                    fill="#4285F4"
+                    d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+                  />
+                  <path fill="none" d="M0 0h48v48H0z" />
+                </svg>
+                <span>Log in with Google</span>
+              </button>
+
+              {onOpenGoogleDrive && (
+                <button
+                  type="button"
+                  onClick={onOpenGoogleDrive}
+                  className="px-3 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-primary text-xs font-bold transition-colors"
+                >
+                  Drive Details
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </section>
+
       {/* Notification Schedule Preferences */}
       <section className="rounded-3xl bg-surface-container-lowest p-4 border border-surface-container shadow-sm space-y-3">
         <div className="flex items-center justify-between">
@@ -297,12 +445,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-2 pt-1">
+          <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
             {browserPermission !== 'granted' && (
               <button
                 type="button"
                 onClick={handleRequestPermission}
-                className="flex-1 py-2 px-3 rounded-xl bg-primary text-on-primary text-xs font-bold shadow-sm hover:bg-primary-container active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                className="w-full sm:flex-1 py-2 px-3 rounded-xl bg-primary text-on-primary text-xs font-bold shadow-sm hover:bg-primary-container active:scale-95 transition-all flex items-center justify-center gap-1.5"
               >
                 <span className="material-symbols-outlined text-[16px]">notification_add</span>
                 Enable Web Notifications
@@ -313,12 +461,28 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
               <button
                 type="button"
                 onClick={onTestNotification}
-                className="flex-1 py-2 px-3 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-primary text-xs font-bold active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                className="w-full sm:flex-1 py-2 px-3 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-primary text-xs font-bold active:scale-95 transition-all flex items-center justify-center gap-1.5"
               >
                 <span className="material-symbols-outlined text-[16px]">notifications_active</span>
-                Test Notification Now
+                Test Dose Alert
               </button>
             )}
+
+            {onTestCourseNotification && (
+              <button
+                type="button"
+                onClick={onTestCourseNotification}
+                className="w-full sm:flex-1 py-2 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 border border-amber-500/30 text-xs font-bold active:scale-95 transition-all flex items-center justify-center gap-1.5"
+              >
+                <span className="material-symbols-outlined text-[16px] text-amber-600">event_repeat</span>
+                Test Course Ending Alert
+              </button>
+            )}
+          </div>
+
+          {/* In-App PWA Install Card */}
+          <div className="pt-1 border-t border-surface-container/60">
+            <PWAInstallButton variant="settings" />
           </div>
         </div>
       </section>
@@ -402,6 +566,44 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             </span>
             <span className="material-symbols-outlined text-[16px] text-outline">chevron_right</span>
           </button>
+
+          {onExportCalendar && (
+            <button
+              onClick={onExportCalendar}
+              className="w-full p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-left text-xs font-semibold text-on-surface flex items-center justify-between"
+              type="button"
+            >
+              <span className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
+                <span>Export Dosage Schedule (.ics Calendar)</span>
+              </span>
+              <span className="material-symbols-outlined text-[16px] text-outline">download</span>
+            </button>
+          )}
+
+          {onOpenGoogleDrive && (
+            <button
+              onClick={onOpenGoogleDrive}
+              className="w-full p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-left text-xs font-semibold text-on-surface flex items-center justify-between"
+              type="button"
+            >
+              <span className="flex items-center gap-1.5">
+                {/* Mini Google Drive SVG */}
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
+                  <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
+                  <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44c-.8 1.4-1.2 2.95-1.2 4.5h27.5z" fill="#00ac47"/>
+                  <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
+                  <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
+                  <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
+                  <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
+                </svg>
+                <span>Google Drive Cloud Backup & Restore</span>
+              </span>
+              <span className="text-[10px] text-primary font-bold">
+                {googleUser ? 'Manage' : 'Connect'}
+              </span>
+            </button>
+          )}
 
           <button
             onClick={onExportData}

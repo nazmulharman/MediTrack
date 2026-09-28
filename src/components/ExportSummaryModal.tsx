@@ -9,6 +9,7 @@ interface ExportSummaryModalProps {
   medicines: Medicine[];
   prescriptions: PrescriptionRecord[];
   testReports: TestReport[];
+  onOpenExportCalendar?: () => void;
 }
 
 export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
@@ -18,6 +19,7 @@ export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
   medicines,
   prescriptions,
   testReports,
+  onOpenExportCalendar,
 }) => {
   if (!isOpen) return null;
 
@@ -45,6 +47,20 @@ export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
             </h3>
           </div>
           <div className="flex items-center gap-2">
+            {onOpenExportCalendar && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenExportCalendar();
+                }}
+                type="button"
+                className="px-3 py-1.5 rounded-full bg-surface-container text-primary text-xs font-bold hover:bg-surface-container-high flex items-center gap-1 transition-colors"
+                title="Export Dosage Schedule to .ics calendar"
+              >
+                <span className="material-symbols-outlined text-[16px]">calendar_month</span>
+                <span>Export .ics</span>
+              </button>
+            )}
             <button
               onClick={handlePrint}
               type="button"

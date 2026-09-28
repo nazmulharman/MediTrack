@@ -403,6 +403,7 @@ export const INITIAL_TEST_REPORTS: TestReport[] = [
     reportType: 'blood',
     facility: 'Labcorp Metro Center',
     date: 'Sep 12, 2024',
+    fileUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB9NH81i_mh13YEoZeDKVK8QkskiYTrbGTbRS_NLmkE6fA2aP-h8ybrxF_1ZglrZbhAXL3aCtb8rq6Dec3Kg8sDK_srJ9LdhNRZ-oz7OYo6hysVvTXzEGedy05spJAHvvrYUFzL2ZFlDO_sjsbQUbA16oXP0FQefohElBU8nebDMBXgQ__I5VTJwlu3hu45aPBFBlIP_VLdnkTR7LBcue6ZmQ9c_tP1z38E_00C3utVxDbXnD53pBMT',
     summary: 'Result: 38 ng/mL (Optimal range 30-100 ng/mL). Continued 1000 IU maintenance recommended.',
     flag: 'normal'
   },
@@ -413,6 +414,7 @@ export const INITIAL_TEST_REPORTS: TestReport[] = [
     reportType: 'blood',
     facility: 'Mercy Medical Lab',
     date: 'Oct 02, 2024',
+    fileUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBHjyE7LWXZ4VQQT2vmwGd3kbZ2EIhsX5yItNqh7FM9Uy7M6s50LnS8kdrsXt90y44sar04mVv3-9phPhmuiW48SsPfIYNLP9rfp2-PVYVe6U4gOq58ye65tib00M7ygOq3Ii8AyfiegxmvDh05kdrItJjxCzLDXFglDhtStUfoFq-zs-AqTCkkh_wYxStsJ5ECiwt1NlTUyhmcOhBrRgIHVC5ZVfG2jVTdHxMdR7UEDE1gEUwFTRch',
     summary: 'HbA1c: 6.4% (Pre-diabetic control well maintained with Metformin 500mg).',
     flag: 'normal'
   }

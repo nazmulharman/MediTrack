@@ -8,6 +8,9 @@ interface MedicinesTabProps {
   onOpenAddMedicine: () => void;
   onOpenRefill: (medicine: Medicine) => void;
   onEditMedicine?: (medicine: Medicine) => void;
+  onOpenExportCalendar?: (medId?: string) => void;
+  onContactDoctor?: (med: Medicine) => void;
+  onRequestRenewal?: (med: Medicine) => void;
 }
 
 export const MedicinesTab: React.FC<MedicinesTabProps> = ({
@@ -16,6 +19,9 @@ export const MedicinesTab: React.FC<MedicinesTabProps> = ({
   onOpenAddMedicine,
   onOpenRefill,
   onEditMedicine,
+  onOpenExportCalendar,
+  onContactDoctor,
+  onRequestRenewal,
 }) => {
   const [filter, setFilter] = useState<'all' | 'active' | 'low_stock' | 'completed'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -185,7 +191,17 @@ export const MedicinesTab: React.FC<MedicinesTabProps> = ({
             {activeMedicines.length} Prescriptions
           </span>
         </div>
-        <span className="text-[11px] font-semibold text-outline">Sorted by Urgency</span>
+        {onOpenExportCalendar && (
+          <button
+            onClick={() => onOpenExportCalendar()}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high hover:bg-surface-container text-primary font-bold text-xs shadow-xs active:scale-95 transition-all border border-primary/20"
+            type="button"
+            title="Export Dosage Schedule to .ics Calendar"
+          >
+            <span className="material-symbols-outlined text-[16px]">calendar_month</span>
+            <span>Export .ics</span>
+          </button>
+        )}
       </div>
 
       {/* Active Courses Cards */}
@@ -292,13 +308,54 @@ export const MedicinesTab: React.FC<MedicinesTabProps> = ({
                         style={{ width: `${completionPct}%` }}
                       />
                     </div>
-                    <div className="flex items-center justify-between text-[10px] text-outline font-semibold pt-0.5">
-                      <span className="flex items-center gap-1 text-error">
-                        <span className="material-symbols-outlined text-[12px]">notifications_active</span>
-                        Stop Reminder: Auto-remind on final day
-                      </span>
-                      <span>Stop Date: {med.endDate || 'Oct 28'}</span>
-                    </div>
+                    {/* Nearing completion alert & action buttons */}
+                    {(() => {
+                      const daysLeft = Math.max(0, (med.durationDays || 7) - (med.currentDay || 1));
+                      if (daysLeft <= 2) {
+                        return (
+                          <div className="mt-1.5 p-2 rounded-xl bg-amber-500/10 border border-amber-500/25 space-y-1.5">
+                            <div className="flex items-center justify-between text-[11px]">
+                              <span className="font-bold text-amber-800 flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[14px] text-amber-600">event_repeat</span>
+                                Course Nearing Completion ({daysLeft === 0 ? 'Ends today' : `${daysLeft} day${daysLeft > 1 ? 's' : ''} left`})
+                              </span>
+                              <span className="text-[10px] text-amber-700 font-bold uppercase">
+                                Action Needed
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5 pt-0.5">
+                              {onContactDoctor && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onContactDoctor(med);
+                                  }}
+                                  className="flex-1 py-1.5 px-2 rounded-lg bg-primary text-on-primary text-[11px] font-bold shadow-2xs hover:bg-primary-container active:scale-95 transition-all flex items-center justify-center gap-1"
+                                >
+                                  <span className="material-symbols-outlined text-[13px]">call</span>
+                                  <span>Contact Doctor</span>
+                                </button>
+                              )}
+                              {onRequestRenewal && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onRequestRenewal(med);
+                                  }}
+                                  className="flex-1 py-1.5 px-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold shadow-2xs active:scale-95 transition-all flex items-center justify-center gap-1"
+                                >
+                                  <span className="material-symbols-outlined text-[13px]">autorenew</span>
+                                  <span>Request Renewal</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 )}
 
@@ -343,6 +400,17 @@ export const MedicinesTab: React.FC<MedicinesTabProps> = ({
                   )}
 
                   <div className="flex items-center gap-1.5">
+                    {onOpenExportCalendar && (
+                      <button
+                        onClick={() => onOpenExportCalendar(med.id)}
+                        type="button"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-surface-container text-on-surface hover:text-primary text-xs font-bold hover:bg-surface-container-high transition-all"
+                        title="Export schedule to calendar (.ics)"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">calendar_month</span>
+                        <span className="hidden sm:inline">iCal</span>
+                      </button>
+                    )}
                     {onEditMedicine && (
                       <button
                         onClick={() => onEditMedicine(med)}

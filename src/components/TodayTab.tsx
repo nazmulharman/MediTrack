@@ -20,6 +20,9 @@ interface TodayTabProps {
   onOpenVitals?: () => void;
   onDiscontinueCourse?: (medId: string) => void;
   onTestNotification?: (dose: DoseItem) => void;
+  onOpenExportCalendar?: () => void;
+  onContactDoctor?: (med: Medicine) => void;
+  onRequestRenewal?: (med: Medicine) => void;
 }
 
 export const TodayTab: React.FC<TodayTabProps> = ({
@@ -40,6 +43,9 @@ export const TodayTab: React.FC<TodayTabProps> = ({
   onOpenVitals,
   onDiscontinueCourse,
   onTestNotification,
+  onOpenExportCalendar,
+  onContactDoctor,
+  onRequestRenewal,
 }) => {
   // Alert dismiss states
   const [dismissRefillAlert, setDismissRefillAlert] = useState(false);
@@ -286,10 +292,30 @@ export const TodayTab: React.FC<TodayTabProps> = ({
                       : `Scheduled course concludes on ${med.endDate || 'Oct 28'}. Do not prolong therapy without clinical consultation.`}
                   </p>
                   <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+                    {onContactDoctor && (
+                      <button
+                        onClick={() => onContactDoctor(med)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-bold shadow-sm hover:bg-primary-container active:scale-95 transition-all"
+                        type="button"
+                      >
+                        <span className="material-symbols-outlined text-[15px]">call</span>
+                        <span>Contact Doctor</span>
+                      </button>
+                    )}
+                    {onRequestRenewal && (
+                      <button
+                        onClick={() => onRequestRenewal(med)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm active:scale-95 transition-all"
+                        type="button"
+                      >
+                        <span className="material-symbols-outlined text-[15px]">autorenew</span>
+                        <span>Request Renewal</span>
+                      </button>
+                    )}
                     {onDiscontinueCourse && (
                       <button
                         onClick={() => onDiscontinueCourse(med.id)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-error text-on-error text-xs font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface text-xs font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all"
                         type="button"
                       >
                         <span className="material-symbols-outlined text-[15px]">check_circle</span>
@@ -301,7 +327,7 @@ export const TodayTab: React.FC<TodayTabProps> = ({
                       className="px-2.5 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant text-xs font-semibold hover:bg-surface-container active:scale-95 transition-all"
                       type="button"
                     >
-                      Dismiss Reminder
+                      Dismiss
                     </button>
                   </div>
                 </div>
@@ -571,7 +597,27 @@ export const TodayTab: React.FC<TodayTabProps> = ({
       </section>
 
       {/* Dose Checklist Grouped Chronologically */}
-      <section aria-label="Daily Dosage Schedule" className="flex flex-col space-y-5">
+      <section aria-label="Daily Dosage Schedule" className="flex flex-col space-y-4">
+        <div className="flex items-center justify-between pt-1">
+          <div>
+            <h3 className="font-headline font-bold text-sm text-on-surface">Daily Dosage Schedule</h3>
+            <p className="text-[11px] text-on-surface-variant font-medium">
+              Today's planned doses • {takenDoses} of {totalDoses} taken ({adherencePercentage}%)
+            </p>
+          </div>
+          {onOpenExportCalendar && (
+            <button
+              onClick={onOpenExportCalendar}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-surface-container-high hover:bg-surface-container text-primary font-bold text-xs shadow-xs active:scale-95 transition-all border border-primary/20"
+              type="button"
+              title="Export dosage routine to .ics calendar"
+            >
+              <span className="material-symbols-outlined text-[16px]">calendar_month</span>
+              <span>Export .ics</span>
+            </button>
+          )}
+        </div>
+
         {/* TIME BLOCK 1: MORNING (COMPLETED) */}
         {morningDoses.length > 0 && (
           <div className="flex flex-col space-y-2.5">

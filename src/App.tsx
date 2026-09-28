@@ -32,14 +32,24 @@ import { RefillModal } from './components/RefillModal';
 import { ZoomInspectModal } from './components/ZoomInspectModal';
 import { MedicineDetailModal } from './components/MedicineDetailModal';
 import { ExportSummaryModal } from './components/ExportSummaryModal';
+import { ExportCalendarModal } from './components/ExportCalendarModal';
 import { NotificationBanner } from './components/NotificationBanner';
 import { AddReportModal } from './components/AddReportModal';
 import { AddPrescriptionModal } from './components/AddPrescriptionModal';
 import { VitalsModal } from './components/VitalsModal';
 import { SmartLogoModal } from './components/SmartLogoModal';
+import { GoogleDriveModal } from './components/GoogleDriveModal';
+import { CourseRenewalModal } from './components/CourseRenewalModal';
 import { useNotificationScheduler } from './hooks/useNotificationScheduler';
-import { notificationService } from './services/notificationService';
+import { notificationService, ActiveCourseAlert } from './services/notificationService';
 import { roundFraction, formatFraction } from './utils/fractionUtils';
+import {
+  initAuth,
+  googleSignIn,
+  googleSignOut,
+  MediTrackDataPayload,
+} from './services/googleDriveService';
+import { User } from 'firebase/auth';
 
 export default function App() {
   // Navigation
@@ -115,7 +125,119 @@ export default function App() {
   });
 
   const [isExportPDFOpen, setIsExportPDFOpen] = useState(false);
+  const [isExportCalendarOpen, setIsExportCalendarOpen] = useState(false);
+  const [exportCalendarMedId, setExportCalendarMedId] = useState<string | undefined>(undefined);
   const [isSmartLogoOpen, setIsSmartLogoOpen] = useState(false);
+  const [googleUser, setGoogleUser] = useState<User | null>(null);
+  const [isGoogleDriveOpen, setIsGoogleDriveOpen] = useState(false);
+  const [courseRenewalState, setCourseRenewalState] = useState<{
+    isOpen: boolean;
+    medicine: Medicine | null;
+    alertData: ActiveCourseAlert | null;
+    initialMode: 'contact' | 'renew';
+  }>({
+    isOpen: false,
+    medicine: null,
+    alertData: null,
+    initialMode: 'contact',
+  });
+
+  // Initialize Firebase Auth listener for Google Account
+  useEffect(() => {
+    const unsub = initAuth(
+      (user) => setGoogleUser(user),
+      () => setGoogleUser(null)
+    );
+    return () => {
+      if (typeof unsub === 'function') {
+        unsub();
+      }
+    };
+  }, []);
+
+  const handleOpenExportCalendar = (medId?: string) => {
+    setExportCalendarMedId(medId);
+    setIsExportCalendarOpen(true);
+  };
+
+  const handleRenewCourse = (
+    medicineId: string,
+    additionalDays: number,
+    additionalQuantity: number,
+    note?: string
+  ) => {
+    setMedicines((prev) =>
+      prev.map((med) => {
+        if (med.id === medicineId) {
+          const newDuration = (med.durationDays || 7) + additionalDays;
+          const newRemaining = (med.remainingQuantity || 0) + additionalQuantity;
+          const newTotal = (med.totalQuantity || 0) + additionalQuantity;
+          return {
+            ...med,
+            durationDays: newDuration,
+            remainingQuantity: newRemaining,
+            totalQuantity: newTotal,
+            status: 'active',
+          };
+        }
+        return med;
+      })
+    );
+
+    const targetMed = medicines.find((m) => m.id === medicineId);
+    const medName = targetMed?.name || 'Medicine';
+
+    setGalleryToast({
+      message: `Course Renewed: ${medName}`,
+      subMessage: `Extended by +${additionalDays} days (+${additionalQuantity} units added to stock).`,
+      show: true,
+    });
+  };
+
+  const handleRestoreData = (payload: MediTrackDataPayload) => {
+    if (payload.profiles && Array.isArray(payload.profiles) && payload.profiles.length > 0) {
+      setProfiles(payload.profiles);
+      setActiveProfile(payload.profiles[0]);
+    }
+    if (payload.medicines && Array.isArray(payload.medicines)) {
+      setMedicines(payload.medicines);
+    }
+    if (payload.doses && Array.isArray(payload.doses)) {
+      setDoses(payload.doses);
+    }
+    if (payload.prescriptions && Array.isArray(payload.prescriptions)) {
+      setPrescriptions(payload.prescriptions);
+    }
+    if (payload.testReports && Array.isArray(payload.testReports)) {
+      setTestReports(payload.testReports);
+    }
+    if (payload.visits && Array.isArray(payload.visits)) {
+      setVisits(payload.visits);
+    }
+    if (payload.vitals && Array.isArray(payload.vitals)) {
+      setVitals(payload.vitals);
+    }
+    if (payload.settings) {
+      setSettings(payload.settings);
+    }
+    setGalleryToast({
+      message: 'Cloud Vault Restored Successfully',
+      subMessage: `Loaded ${payload.medicines?.length || 0} medicines and ${payload.profiles?.length || 0} profiles from Google Drive.`,
+      show: true,
+    });
+  };
+
+  // Gallery and Vault view mode state
+  const [vaultViewMode, setVaultViewMode] = useState<'gallery' | 'list'>('gallery');
+  const [vaultCategory, setVaultCategory] = useState<
+    'all' | 'prescriptions' | 'labs' | 'vitals' | 'visits' | 'gallery'
+  >('all');
+  const [highlightDocId, setHighlightDocId] = useState<string | null>(null);
+  const [galleryToast, setGalleryToast] = useState<{
+    message: string;
+    subMessage?: string;
+    show: boolean;
+  } | null>(null);
 
   // Sync to localStorage
   useEffect(() => {
@@ -313,14 +435,42 @@ export default function App() {
 
   const handleSaveReport = (newReport: TestReport) => {
     setTestReports((prev) => [newReport, ...prev]);
+    setCurrentTab('vault');
+    setVaultViewMode('gallery');
+    setVaultCategory('all');
+    setHighlightDocId(newReport.id);
+    setGalleryToast({
+      message: `Report "${newReport.title}" Stored!`,
+      subMessage: 'Showing all reports & prescriptions in your gallery',
+      show: true,
+    });
+    setTimeout(() => {
+      setGalleryToast(null);
+    }, 4500);
   };
 
   const handleSavePrescription = (newPrescription: PrescriptionRecord) => {
     setPrescriptions((prev) => [newPrescription, ...prev]);
+    setCurrentTab('vault');
+    setVaultViewMode('gallery');
+    setVaultCategory('all');
+    setHighlightDocId(newPrescription.id);
+    setGalleryToast({
+      message: `Prescription from ${newPrescription.doctorName} Attached!`,
+      subMessage: 'Showing all reports & prescriptions in your gallery',
+      show: true,
+    });
+    setTimeout(() => {
+      setGalleryToast(null);
+    }, 4500);
   };
 
   const handleDeleteReport = (reportId: string) => {
     setTestReports((prev) => prev.filter((r) => r.id !== reportId));
+  };
+
+  const handleDeletePrescription = (rxId: string) => {
+    setPrescriptions((prev) => prev.filter((p) => p.id !== rxId));
   };
 
   const handleSaveVital = (newVital: HealthVitalLog) => {
@@ -402,10 +552,14 @@ export default function App() {
     (m) => m.status === 'active' && m.remainingQuantity <= m.refillTrigger
   );
 
-  // Web Notification Scheduler Hook
-  const { testTrigger } = useNotificationScheduler(doses, (doseId, action) => {
-    handleUpdateDoseStatus(doseId, action);
-  });
+  // Web Notification Scheduler Hook (monitors scheduled doses and course completion alerts)
+  const { testTrigger, testCourseTrigger } = useNotificationScheduler(
+    doses,
+    (doseId, action) => {
+      handleUpdateDoseStatus(doseId, action);
+    },
+    medicines
+  );
 
   const handleTestNotification = (targetDose?: DoseItem) => {
     const doseToTest =
@@ -417,6 +571,10 @@ export default function App() {
     }
   };
 
+  const handleTestCourseNotification = () => {
+    testCourseTrigger();
+  };
+
   return (
     <div className="min-h-screen bg-surface flex flex-col antialiased text-on-surface">
       {/* Top Application Bar */}
@@ -425,14 +583,62 @@ export default function App() {
         activeProfile={activeProfile}
         onOpenProfiles={() => setCurrentTab('settings')}
         onOpenSmartLogo={() => setIsSmartLogoOpen(true)}
+        onOpenGoogleDrive={() => setIsGoogleDriveOpen(true)}
+        googleUser={googleUser}
       />
 
-      {/* Actionable Web Notification Banner with Taken and Skip */}
+      {/* Actionable Web Notification Banner with Taken and Skip & Course Completion */}
       <NotificationBanner
         onDoseAction={(doseId, action) => {
           handleUpdateDoseStatus(doseId, action);
         }}
+        onContactDoctor={(alert) => {
+          const med = medicines.find((m) => m.id === alert.medicineId) || null;
+          setCourseRenewalState({
+            isOpen: true,
+            medicine: med,
+            alertData: alert,
+            initialMode: 'contact',
+          });
+        }}
+        onRequestRenewal={(alert) => {
+          const med = medicines.find((m) => m.id === alert.medicineId) || null;
+          setCourseRenewalState({
+            isOpen: true,
+            medicine: med,
+            alertData: alert,
+            initialMode: 'renew',
+          });
+        }}
       />
+
+      {/* Gallery Flash Confirmation Toast */}
+      {galleryToast?.show && (
+        <aside
+          aria-live="polite"
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[92%] bg-primary text-on-primary p-3 rounded-2xl shadow-2xl flex items-center justify-between gap-3 border border-white/20 animate-in fade-in slide-in-from-top-4"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[19px]">photo_library</span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold font-headline truncate">{galleryToast.message}</p>
+              {galleryToast.subMessage && (
+                <p className="text-[11px] opacity-90 truncate">{galleryToast.subMessage}</p>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={() => setGalleryToast(null)}
+            type="button"
+            className="p-1 rounded-full hover:bg-white/20 text-white/80 hover:text-white transition-colors shrink-0"
+            aria-label="Dismiss toast"
+          >
+            <span className="material-symbols-outlined text-[17px]">close</span>
+          </button>
+        </aside>
+      )}
 
       {/* Main Screen Content Viewport */}
       <main className="flex-1 w-full max-w-lg mx-auto px-4 pt-18 bg-surface">
@@ -461,6 +667,23 @@ export default function App() {
             onOpenVitals={() => setIsVitalsOpen(true)}
             onDiscontinueCourse={handleDiscontinueCourse}
             onTestNotification={handleTestNotification}
+            onOpenExportCalendar={() => handleOpenExportCalendar()}
+            onContactDoctor={(med) => {
+              setCourseRenewalState({
+                isOpen: true,
+                medicine: med,
+                alertData: null,
+                initialMode: 'contact',
+              });
+            }}
+            onRequestRenewal={(med) => {
+              setCourseRenewalState({
+                isOpen: true,
+                medicine: med,
+                alertData: null,
+                initialMode: 'renew',
+              });
+            }}
           />
         )}
 
@@ -477,6 +700,23 @@ export default function App() {
               setIsAddMedicineOpen(true);
             }}
             onOpenRefill={(med) => setSelectedMedForRefill(med)}
+            onOpenExportCalendar={(medId) => handleOpenExportCalendar(medId)}
+            onContactDoctor={(med) => {
+              setCourseRenewalState({
+                isOpen: true,
+                medicine: med,
+                alertData: null,
+                initialMode: 'contact',
+              });
+            }}
+            onRequestRenewal={(med) => {
+              setCourseRenewalState({
+                isOpen: true,
+                medicine: med,
+                alertData: null,
+                initialMode: 'renew',
+              });
+            }}
           />
         )}
 
@@ -495,7 +735,14 @@ export default function App() {
             onOpenAddPrescription={() => setIsAddPrescriptionOpen(true)}
             onOpenVitals={() => setIsVitalsOpen(true)}
             onExportPDF={() => setIsExportPDFOpen(true)}
+            onExportCalendar={() => handleOpenExportCalendar()}
+            onOpenGoogleDrive={() => setIsGoogleDriveOpen(true)}
             onDeleteReport={handleDeleteReport}
+            onDeletePrescription={handleDeletePrescription}
+            initialViewMode={vaultViewMode}
+            initialCategory={vaultCategory}
+            highlightDocId={highlightDocId}
+            onClearHighlight={() => setHighlightDocId(null)}
           />
         )}
 
@@ -518,8 +765,28 @@ export default function App() {
             onUpdateSettings={setSettings}
             onResetData={handleResetData}
             onExportData={handleExportJSON}
+            onExportCalendar={() => handleOpenExportCalendar()}
             onTestNotification={() => handleTestNotification()}
+            onTestCourseNotification={handleTestCourseNotification}
             onOpenSmartLogo={() => setIsSmartLogoOpen(true)}
+            onOpenGoogleDrive={() => setIsGoogleDriveOpen(true)}
+            googleUser={googleUser}
+            onGoogleSignIn={async () => {
+              try {
+                const res = await googleSignIn();
+                if (res) setGoogleUser(res.user);
+              } catch (err) {
+                console.error(err);
+              }
+            }}
+            onGoogleSignOut={async () => {
+              try {
+                await googleSignOut();
+                setGoogleUser(null);
+              } catch (err) {
+                console.error(err);
+              }
+            }}
           />
         )}
       </main>
@@ -532,6 +799,23 @@ export default function App() {
       />
 
       {/* Modals & Dialogs */}
+      <GoogleDriveModal
+        isOpen={isGoogleDriveOpen}
+        onClose={() => setIsGoogleDriveOpen(false)}
+        currentUser={googleUser}
+        onUserChange={setGoogleUser}
+        appData={{
+          profiles,
+          medicines,
+          doses,
+          prescriptions,
+          testReports,
+          visits,
+          vitals,
+          settings,
+        }}
+        onRestoreData={handleRestoreData}
+      />
       {isSmartLogoOpen && (
         <SmartLogoModal
           isOpen={isSmartLogoOpen}
@@ -617,6 +901,23 @@ export default function App() {
           }}
           onUpdateConsumed={handleUpdateConsumed}
           onToggleStatus={handleToggleMedicineStatus}
+          onExportCalendar={(medId) => handleOpenExportCalendar(medId)}
+          onContactDoctor={(med) => {
+            setCourseRenewalState({
+              isOpen: true,
+              medicine: med,
+              alertData: null,
+              initialMode: 'contact',
+            });
+          }}
+          onRequestRenewal={(med) => {
+            setCourseRenewalState({
+              isOpen: true,
+              medicine: med,
+              alertData: null,
+              initialMode: 'renew',
+            });
+          }}
           onInspectPrescription={(rxId) => {
             if (selectedMedForDetail?.photoUrl) {
               setZoomModalData({
@@ -658,8 +959,36 @@ export default function App() {
           medicines={medicines}
           prescriptions={prescriptions}
           testReports={testReports}
+          onOpenExportCalendar={() => handleOpenExportCalendar()}
         />
       )}
+
+      {isExportCalendarOpen && (
+        <ExportCalendarModal
+          isOpen={isExportCalendarOpen}
+          onClose={() => {
+            setIsExportCalendarOpen(false);
+            setExportCalendarMedId(undefined);
+          }}
+          medicines={medicines}
+          profiles={profiles}
+          activeProfile={activeProfile}
+          initialSelectedMedId={exportCalendarMedId}
+        />
+      )}
+
+      {/* Course Completion & Doctor Renewal Modal */}
+      <CourseRenewalModal
+        isOpen={courseRenewalState.isOpen}
+        onClose={() =>
+          setCourseRenewalState((prev) => ({ ...prev, isOpen: false }))
+        }
+        medicine={courseRenewalState.medicine}
+        alertData={courseRenewalState.alertData}
+        prescriptions={prescriptions}
+        initialMode={courseRenewalState.initialMode}
+        onRenewCourse={handleRenewCourse}
+      />
     </div>
   );
 }

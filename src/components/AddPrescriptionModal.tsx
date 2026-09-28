@@ -309,8 +309,8 @@ export const AddPrescriptionModal: React.FC<AddPrescriptionModalProps> = ({
             onClick={handleSave}
             className="flex-1 py-2.5 rounded-full bg-primary text-on-primary font-bold text-xs shadow-md hover:bg-primary-container active:scale-95 transition-all flex items-center justify-center gap-1.5"
           >
-            <span className="material-symbols-outlined text-[16px]">save</span>
-            Save Prescription
+            <span className="material-symbols-outlined text-[16px]">photo_library</span>
+            Save & View in Gallery
           </button>
         </div>
       </div>

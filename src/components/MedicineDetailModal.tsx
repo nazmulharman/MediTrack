@@ -11,6 +11,9 @@ interface MedicineDetailModalProps {
   onUpdateConsumed?: (medId: string, newConsumed: number) => void;
   onToggleStatus: (medId: string, newStatus: 'active' | 'completed' | 'discontinued') => void;
   onInspectPrescription?: (rxId: string) => void;
+  onExportCalendar?: (medicineId?: string) => void;
+  onContactDoctor?: (med: Medicine) => void;
+  onRequestRenewal?: (med: Medicine) => void;
 }
 
 export const MedicineDetailModal: React.FC<MedicineDetailModalProps> = ({
@@ -22,6 +25,9 @@ export const MedicineDetailModal: React.FC<MedicineDetailModalProps> = ({
   onUpdateConsumed,
   onToggleStatus,
   onInspectPrescription,
+  onExportCalendar,
+  onContactDoctor,
+  onRequestRenewal,
 }) => {
   if (!isOpen || !medicine) return null;
 
@@ -326,7 +332,22 @@ export const MedicineDetailModal: React.FC<MedicineDetailModalProps> = ({
                 <span className="material-symbols-outlined text-[16px] text-primary">schedule</span>
                 Daily Dosage Schedule
               </span>
-              <span className="text-xs font-semibold text-primary">{medicine.frequency}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-primary">{medicine.frequency}</span>
+                {onExportCalendar && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onExportCalendar(medicine.id);
+                    }}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary font-bold text-[11px] hover:bg-primary/20 active:scale-95 transition-all"
+                    title="Export this medication schedule to .ics calendar"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">calendar_month</span>
+                    <span>Export .ics</span>
+                  </button>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-2 pt-1 overflow-x-auto no-scrollbar">
               {medicine.scheduledTimes.map((time, idx) => (
@@ -380,11 +401,36 @@ export const MedicineDetailModal: React.FC<MedicineDetailModalProps> = ({
                   notification_important
                 </span>
                 <div>
-                  <span className="font-bold block">Stop Course Reminder Enabled</span>
+                  <span className="font-bold block">Course Completion & Stop Protection</span>
                   <span className="text-[11px]">
-                    Alerts you to stop taking this medicine once the {medicine.durationDays || 7}-day course finishes on {medicine.endDate || 'Oct 28, 2024'} to prevent resistance.
+                    Automatic desktop alerts remind you before the {medicine.durationDays || 7}-day course finishes on {medicine.endDate || 'Oct 28, 2024'} to consult your doctor or renew.
                   </span>
                 </div>
+              </div>
+
+              {/* Action Buttons: Contact Doctor & Request Renewal */}
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                {onContactDoctor && (
+                  <button
+                    type="button"
+                    onClick={() => onContactDoctor(medicine)}
+                    className="py-2.5 px-3 rounded-xl bg-primary text-on-primary text-xs font-bold shadow-xs hover:bg-primary-container active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">call</span>
+                    <span>Contact Doctor</span>
+                  </button>
+                )}
+
+                {onRequestRenewal && (
+                  <button
+                    type="button"
+                    onClick={() => onRequestRenewal(medicine)}
+                    className="py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">autorenew</span>
+                    <span>Request Renewal</span>
+                  </button>
+                )}
               </div>
             </div>
           )}

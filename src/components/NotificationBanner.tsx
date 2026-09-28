@@ -1,19 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { ActiveDoseAlert, notificationService } from '../services/notificationService';
+import {
+  ActiveDoseAlert,
+  ActiveCourseAlert,
+  notificationService,
+} from '../services/notificationService';
 
 interface NotificationBannerProps {
   onDoseAction: (doseId: string, action: 'taken' | 'skipped' | 'snoozed') => void;
+  onContactDoctor?: (alert: ActiveCourseAlert) => void;
+  onRequestRenewal?: (alert: ActiveCourseAlert) => void;
 }
 
-export const NotificationBanner: React.FC<NotificationBannerProps> = ({ onDoseAction }) => {
+export const NotificationBanner: React.FC<NotificationBannerProps> = ({
+  onDoseAction,
+  onContactDoctor,
+  onRequestRenewal,
+}) => {
   const [activeAlert, setActiveAlert] = useState<ActiveDoseAlert | null>(null);
+  const [activeCourseAlert, setActiveCourseAlert] = useState<ActiveCourseAlert | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>(() => {
     return notificationService.getPermissionStatus();
   });
 
   useEffect(() => {
-    const unsubscribe = notificationService.subscribeInAppAlert((alert) => {
+    const unsubDose = notificationService.subscribeInAppAlert((alert) => {
       setActiveAlert(alert);
+    });
+
+    const unsubCourse = notificationService.subscribeInAppCourseAlert((alert) => {
+      setActiveCourseAlert(alert);
     });
 
     notificationService.setActionCallback((doseId, action) => {
@@ -21,10 +36,20 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({ onDoseAc
       notificationService.dismissInAppAlert();
     });
 
+    notificationService.setCourseActionCallback((medId, action, alert) => {
+      if (action === 'contact_doctor') {
+        if (onContactDoctor) onContactDoctor(alert);
+      } else if (action === 'request_renewal' || action === 'view') {
+        if (onRequestRenewal) onRequestRenewal(alert);
+      }
+      notificationService.dismissCourseAlert();
+    });
+
     return () => {
-      unsubscribe();
+      unsubDose();
+      unsubCourse();
     };
-  }, [onDoseAction]);
+  }, [onDoseAction, onContactDoctor, onRequestRenewal]);
 
   const handleRequestPermission = async () => {
     const res = await notificationService.requestPermission();
@@ -52,10 +77,96 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({ onDoseAc
     notificationService.dismissInAppAlert();
   };
 
-  const handleDismiss = () => {
+  const handleDismissDose = () => {
     notificationService.dismissInAppAlert();
   };
 
+  const handleDismissCourse = () => {
+    notificationService.dismissCourseAlert();
+  };
+
+  // 1. Course Alert takes priority if active, or dose alert
+  if (activeCourseAlert) {
+    const remainingText =
+      activeCourseAlert.daysRemaining === 0
+        ? 'Ends today'
+        : `${activeCourseAlert.daysRemaining} day${
+            activeCourseAlert.daysRemaining > 1 ? 's' : ''
+          } remaining`;
+
+    return (
+      <div className="fixed top-18 inset-x-0 z-50 px-4 pointer-events-none animate-in slide-in-from-top-4 duration-300">
+        <div className="pointer-events-auto max-w-md mx-auto bg-surface-container-lowest rounded-3xl p-4 shadow-2xl border-2 border-amber-500/50 ring-4 ring-amber-500/10 flex flex-col gap-3">
+          {/* Header strip */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-600 flex items-center justify-center shrink-0 animate-pulse border border-amber-500/20">
+                <span className="material-symbols-outlined text-[24px]">event_repeat</span>
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                    Course Ending Soon
+                  </span>
+                  <span className="text-xs font-bold text-amber-700">{remainingText}</span>
+                </div>
+                <h4 className="font-headline font-bold text-base text-on-surface truncate mt-0.5">
+                  {activeCourseAlert.medicineName} ({activeCourseAlert.strength})
+                </h4>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleDismissCourse}
+              className="w-8 h-8 rounded-full bg-surface-container-low text-on-surface-variant hover:text-on-surface flex items-center justify-center shrink-0"
+              aria-label="Dismiss course alert"
+            >
+              <span className="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+
+          {/* Details message */}
+          <p className="text-xs text-on-surface-variant bg-surface-container-low p-2.5 rounded-xl font-medium leading-relaxed">
+            Day {activeCourseAlert.currentDay} of {activeCourseAlert.durationDays} completed.{' '}
+            {activeCourseAlert.doctorName
+              ? `Prescribed by ${activeCourseAlert.doctorName}. `
+              : ''}
+            Contact your doctor or request a course renewal before supplies exhaust.
+          </p>
+
+          {/* Action Buttons: Easy Contact Doctor & Request Renewal */}
+          <div className="grid grid-cols-2 gap-2 pt-0.5">
+            <button
+              type="button"
+              onClick={() => {
+                if (onContactDoctor) onContactDoctor(activeCourseAlert);
+                handleDismissCourse();
+              }}
+              className="h-11 rounded-2xl bg-primary text-on-primary font-headline font-bold text-xs flex items-center justify-center gap-1.5 shadow-md hover:bg-primary-container active:scale-95 transition-all"
+            >
+              <span className="material-symbols-outlined text-[18px]">call</span>
+              <span>Contact Doctor</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (onRequestRenewal) onRequestRenewal(activeCourseAlert);
+                handleDismissCourse();
+              }}
+              className="h-11 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-headline font-bold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
+            >
+              <span className="material-symbols-outlined text-[18px]">autorenew</span>
+              <span>Request Renewal</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Active Dose Alert
   if (!activeAlert) {
     // Show gentle permission banner if default/prompt available
     if (permissionStatus === 'default') {
@@ -67,7 +178,7 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({ onDoseAc
                 notifications_active
               </span>
               <p className="text-xs text-on-surface leading-tight font-medium truncate">
-                Enable browser alerts for scheduled dose reminders
+                Enable desktop alerts for dose reminders & course completion
               </p>
             </div>
             <button
@@ -108,7 +219,7 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({ onDoseAc
 
           <button
             type="button"
-            onClick={handleDismiss}
+            onClick={handleDismissDose}
             className="w-8 h-8 rounded-full bg-surface-container-low text-on-surface-variant hover:text-on-surface flex items-center justify-center shrink-0"
             aria-label="Dismiss alert banner"
           >
@@ -154,3 +265,4 @@ export const NotificationBanner: React.FC<NotificationBannerProps> = ({ onDoseAc
     </div>
   );
 };
+
