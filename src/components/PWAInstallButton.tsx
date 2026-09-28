@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
+import { AndroidApkModal } from './AndroidApkModal';
 
 interface PWAInstallButtonProps {
   className?: string;
@@ -12,6 +13,7 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
 }) => {
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
   const [showIOSGuide, setShowIOSGuide] = useState(false);
+  const [showApkModal, setShowApkModal] = useState(false);
 
   // If already running in standalone PWA mode, suppress button
   if (isInstalled) {
@@ -218,5 +220,41 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({
     );
   }
 
-  return null;
+  // Universal fallback for browsers/desktop/iframes without prompt
+  if (variant === 'settings') {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setShowApkModal(true)}
+          className={`w-full p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container text-left text-xs font-semibold text-on-surface flex items-center justify-between border border-surface-container ${className}`}
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="material-symbols-outlined text-primary text-[19px]">install_mobile</span>
+            <div>
+              <span className="font-bold text-on-surface block">Install App / Android APK</span>
+              <span className="text-[10px] text-on-surface-variant block">Add to Home Screen or build native APK</span>
+            </div>
+          </div>
+          <span className="text-primary text-xs font-bold">Install →</span>
+        </button>
+        <AndroidApkModal isOpen={showApkModal} onClose={() => setShowApkModal(false)} />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setShowApkModal(true)}
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-container border border-surface-container-highest text-on-surface text-xs font-bold shadow-xs hover:bg-surface-container-high active:scale-95 transition-all ${className}`}
+        title="Install MediTrack / Android APK"
+      >
+        <span className="material-symbols-outlined text-primary text-[16px]">install_mobile</span>
+        <span>Install / APK</span>
+      </button>
+      <AndroidApkModal isOpen={showApkModal} onClose={() => setShowApkModal(false)} />
+    </>
+  );
 };

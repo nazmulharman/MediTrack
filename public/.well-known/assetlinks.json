@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.meditrack.twa",
+      "sha256_cert_fingerprints": [
+        "14:6D:E9:44:C5:9F:5C:8B:79:B0:1B:32:8B:6C:6A:82:1D:C4:4E:9F:9E:09:A6:6C:29:4F:91:6A:9A:BF:19:64"
+      ]
+    }
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "packageId": "app.meditrack.twa",
+  "host": "ais-pre-hpresemu5benx7qvjgmpo3-865246501235.asia-southeast1.run.app",
+  "name": "MediTrack - Medicine Tracker",
+  "launcherName": "MediTrack",
+  "themeColor": "#00685F",
+  "navigationColor": "#00201D",
+  "backgroundColor": "#00201D",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "/pwa-512x512.png",
+  "maskableIconUrl": "/pwa-maskable-512x512.png",
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://ais-pre-hpresemu5benx7qvjgmpo3-865246501235.asia-southeast1.run.app/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  }
+}

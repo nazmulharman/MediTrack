@@ -5,6 +5,7 @@ import { notificationService } from '../services/notificationService';
 import { SmartLogo } from './SmartLogo';
 import { SmartLogoModal } from './SmartLogoModal';
 import { PWAInstallButton } from './PWAInstallButton';
+import { AndroidApkModal } from './AndroidApkModal';
 
 interface SettingsTabProps {
   profiles: PatientProfile[];
@@ -46,6 +47,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
   const [appLockEnabled, setAppLockEnabled] = useState(true);
   const [showAddMember, setShowAddMember] = useState(false);
   const [showLogoModal, setShowLogoModal] = useState(false);
+  const [showApkModal, setShowApkModal] = useState(false);
   const [newName, setNewName] = useState('');
   const [newRelation, setNewRelation] = useState<'child' | 'parent' | 'spouse' | 'other'>('child');
   const [showDisclaimerModal, setShowDisclaimerModal] = useState(false);
@@ -480,9 +482,34 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             )}
           </div>
 
-          {/* In-App PWA Install Card */}
-          <div className="pt-1 border-t border-surface-container/60">
+          {/* In-App PWA Install & Android APK Card */}
+          <div className="pt-2 border-t border-surface-container/60 space-y-2">
             <PWAInstallButton variant="settings" />
+            <button
+              type="button"
+              onClick={() => setShowApkModal(true)}
+              className="w-full p-3 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/25 text-left text-xs font-semibold text-on-surface flex items-center justify-between transition-all active:scale-98"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-[20px]">android</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-on-surface">Android APK Format (.apk)</span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-600/15 text-emerald-700 dark:text-emerald-300">
+                      TWA & WebAPK
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-on-surface-variant block">
+                    1-Click cloud APK builder, WebAPK minting, & package files
+                  </span>
+                </div>
+              </div>
+              <span className="material-symbols-outlined text-emerald-600 text-[18px]">
+                arrow_forward
+              </span>
+            </button>
           </div>
         </div>
       </section>
@@ -689,6 +716,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
       <SmartLogoModal
         isOpen={showLogoModal}
         onClose={() => setShowLogoModal(false)}
+      />
+
+      {/* Android APK Format & TWA Hub Modal */}
+      <AndroidApkModal
+        isOpen={showApkModal}
+        onClose={() => setShowApkModal(false)}
       />
     </div>
   );

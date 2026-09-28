@@ -14,17 +14,28 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
+        manifestFilename: 'manifest.webmanifest',
+        includeAssets: [
+          'favicon.ico',
+          'apple-touch-icon.png',
+          'icon.svg',
+          'pwa-192x192.png',
+          'pwa-512x512.png',
+          'pwa-maskable-512x512.png',
+        ],
         manifest: {
           id: '/',
-          name: 'MediTrack - Medicine Dosage & Course Tracker',
+          name: 'MediTrack - Medicine Tracker',
           short_name: 'MediTrack',
           description: 'A personal medicine companion that tracks dosage schedules, stock levels, and expiry while keeping prescriptions and test reports in an encrypted vault.',
           theme_color: '#00685f',
           background_color: '#00201d',
           display: 'standalone',
+          orientation: 'portrait',
           start_url: '/',
           scope: '/',
+          categories: ['medical', 'health', 'lifestyle'],
+          lang: 'en',
           icons: [
             {
               src: '/pwa-192x192.png',
