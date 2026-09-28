@@ -646,7 +646,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
 
           <button
             onClick={() => {
-              if (confirm('Reset application to default demo dataset?')) {
+              if (confirm('Clear all data and start completely fresh? This cannot be undone.')) {
                 onResetData();
               }
             }}
@@ -654,10 +654,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
             type="button"
           >
             <span className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px]">restart_alt</span>
-              Reset Demo Data
+              <span className="material-symbols-outlined text-[16px]">delete_sweep</span>
+              Clear All Data (Start Fresh)
             </span>
-            <span className="text-[10px] text-error font-bold">Reset</span>
+            <span className="text-[10px] text-error font-bold">Clear</span>
           </button>
         </div>
       </section>

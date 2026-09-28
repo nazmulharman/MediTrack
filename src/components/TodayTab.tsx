@@ -98,8 +98,17 @@ export const TodayTab: React.FC<TodayTabProps> = ({
   const allMorningTaken =
     morningDoses.length > 0 && morningDoses.every((d) => d.status === 'taken');
 
-  // Find Amoxicillin for refill modal
-  const amoxMed = medicines.find((m) => m.name.toLowerCase().includes('amoxicillin')) || medicines[0];
+  // Low stock medicines (remainingQuantity <= refillTrigger)
+  const lowStockMeds = medicines.filter(
+    (m) => m.status === 'active' && m.refillTrigger && m.remainingQuantity <= m.refillTrigger
+  );
+
+  // Expiring soon medicines (within 30 days)
+  const expiringMeds = medicines.filter((m) => {
+    if (m.status !== 'active' || !m.expiryDate) return false;
+    const diff = Math.ceil((new Date(m.expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    return diff > 0 && diff <= 30;
+  });
 
   return (
     <div className="flex flex-col w-full space-y-5 pb-28 pt-2">
@@ -226,7 +235,13 @@ export const TodayTab: React.FC<TodayTabProps> = ({
         {/* Active Courses & Next Alarm */}
         <div className="col-span-2 flex flex-col gap-2.5">
           <div
-            onClick={() => onSelectMedicine(amoxMed)}
+            onClick={() => {
+              if (medicines.length > 0) {
+                onSelectMedicine(medicines[0]);
+              } else {
+                onOpenAddMedicine();
+              }
+            }}
             className="bg-surface-container-lowest rounded-2xl p-3.5 shadow-sm flex-1 flex flex-col justify-between border border-surface-container cursor-pointer hover:border-primary/40 transition-colors"
           >
             <div className="flex items-center justify-between">
@@ -337,7 +352,7 @@ export const TodayTab: React.FC<TodayTabProps> = ({
         })}
 
         {/* Low Stock Alert */}
-        {!dismissRefillAlert && (
+        {lowStockMeds.length > 0 && !dismissRefillAlert && (
           <div className="relative bg-surface-container-lowest rounded-2xl p-3.5 shadow-sm overflow-hidden border border-surface-container">
             <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-error" />
             <div className="flex items-start gap-3 pl-1">
@@ -349,17 +364,17 @@ export const TodayTab: React.FC<TodayTabProps> = ({
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-extrabold uppercase">
                     Refill Needed
                   </span>
-                  <span className="text-xs text-on-surface-variant font-medium">2 days left</span>
+                  <span className="text-xs text-on-surface-variant font-medium">Low Stock</span>
                 </div>
                 <p className="font-headline font-bold text-sm text-on-surface mt-1 truncate">
-                  Amoxicillin 500mg
+                  {lowStockMeds[0].name} {lowStockMeds[0].strength}{lowStockMeds[0].strengthUnit}
                 </p>
                 <p className="text-xs text-on-surface-variant mt-0.5">
-                  Only 4 capsules remaining in home dispenser.
+                  Only {formatFraction(lowStockMeds[0].remainingQuantity)} {lowStockMeds[0].form}s remaining in dispenser.
                 </p>
                 <div className="flex items-center gap-2 mt-2.5">
                   <button
-                    onClick={() => onOpenRefill(amoxMed)}
+                    onClick={() => onOpenRefill(lowStockMeds[0])}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all"
                     type="button"
                   >
@@ -380,18 +395,20 @@ export const TodayTab: React.FC<TodayTabProps> = ({
         )}
 
         {/* Expiration Warning Alert */}
-        {!dismissExpiryAlert && (
+        {expiringMeds.length > 0 && !dismissExpiryAlert && (
           <div className="relative bg-surface-container-low rounded-2xl p-3.5 flex items-start gap-3 border border-surface-container">
             <div className="w-8 h-8 rounded-full bg-surface-container text-tertiary flex items-center justify-center shrink-0 mt-0.5">
               <span className="material-symbols-outlined text-[18px]">event_busy</span>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-bold text-on-surface truncate">Cetirizine 10mg</p>
-                <span className="text-[11px] font-semibold text-on-surface-variant">Nov 8</span>
+                <p className="text-xs font-bold text-on-surface truncate">
+                  {expiringMeds[0].name} {expiringMeds[0].strength}{expiringMeds[0].strengthUnit}
+                </p>
+                <span className="text-[11px] font-semibold text-on-surface-variant">{expiringMeds[0].expiryDate}</span>
               </div>
               <p className="text-xs text-on-surface-variant mt-0.5">
-                Package expiration in 14 days. Safe to dispose soon.
+                Package expiration approaching. Verify supply and plan safe disposal.
               </p>
             </div>
             <button
@@ -436,10 +453,10 @@ export const TodayTab: React.FC<TodayTabProps> = ({
             <span className="text-[10px] font-bold text-outline uppercase tracking-wider">Blood Sugar</span>
             <div className="mt-1">
               <span className="font-headline font-extrabold text-lg text-on-surface">
-                {latestSugar?.sugarValue || 94} <span className="text-xs font-semibold text-outline">mg/dL</span>
+                {latestSugar ? `${latestSugar.sugarValue} ` : '-- '} <span className="text-xs font-semibold text-outline">mg/dL</span>
               </span>
               <p className="text-[10px] font-bold text-secondary truncate mt-0.5">
-                {latestSugar ? `${latestSugar.sugarContext?.replace('_', ' ').toUpperCase()} • Normal` : 'Fasting (Normal)'}
+                {latestSugar ? `${latestSugar.sugarContext?.replace('_', ' ').toUpperCase()} • Normal` : 'No readings yet'}
               </p>
             </div>
           </div>
@@ -449,10 +466,10 @@ export const TodayTab: React.FC<TodayTabProps> = ({
             <span className="text-[10px] font-bold text-outline uppercase tracking-wider">Blood Pressure</span>
             <div className="mt-1">
               <span className="font-headline font-extrabold text-lg text-on-surface">
-                {latestBP ? `${latestBP.systolic}/${latestBP.diastolic}` : '118/76'} <span className="text-xs font-semibold text-outline">mmHg</span>
+                {latestBP ? `${latestBP.systolic}/${latestBP.diastolic} ` : '--/-- '} <span className="text-xs font-semibold text-outline">mmHg</span>
               </span>
               <p className="text-[10px] font-bold text-secondary truncate mt-0.5">
-                {latestBP ? `Pulse ${latestBP.pulse || 68} bpm • Normal` : 'Pulse 68 bpm • Normal'}
+                {latestBP ? `Pulse ${latestBP.pulse || '--'} bpm` : 'No readings yet'}
               </p>
             </div>
           </div>
@@ -618,7 +635,28 @@ export const TodayTab: React.FC<TodayTabProps> = ({
           )}
         </div>
 
-        {/* TIME BLOCK 1: MORNING (COMPLETED) */}
+        {/* Empty Schedule Placeholder */}
+        {doses.length === 0 && (
+          <div className="p-8 rounded-3xl bg-surface-container-lowest border border-dashed border-outline-variant/40 flex flex-col items-center justify-center text-center space-y-3">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+              <span className="material-symbols-outlined text-[28px]">medication</span>
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-headline font-bold text-base text-on-surface">No Doses Scheduled for Today</h4>
+              <p className="text-xs text-on-surface-variant max-w-xs">
+                Your schedule is clear. Add your medicines to start tracking daily doses and reminders.
+              </p>
+            </div>
+            <button
+              onClick={onOpenAddMedicine}
+              type="button"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">add</span>
+              <span>Add Medicine</span>
+            </button>
+          </div>
+        )}
         {morningDoses.length > 0 && (
           <div className="flex flex-col space-y-2.5">
             <div className="flex items-center justify-between">

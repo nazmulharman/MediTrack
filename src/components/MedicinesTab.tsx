@@ -206,26 +206,47 @@ export const MedicinesTab: React.FC<MedicinesTabProps> = ({
 
       {/* Active Courses Cards */}
       <div className="flex flex-col gap-3">
-        {activeMedicines.map((med) => {
-          const isLowStock = med.remainingQuantity <= med.refillTrigger;
-          const isFixed = med.isFixedDuration;
-          const completionPct = isFixed
-            ? Math.min(100, Math.round(((med.currentDay || 4) / (med.durationDays || 7)) * 100))
-            : med.adherenceRate;
+        {activeMedicines.length === 0 ? (
+          <div className="p-8 rounded-3xl bg-surface-container-lowest border border-dashed border-outline-variant/40 flex flex-col items-center justify-center text-center space-y-3">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+              <span className="material-symbols-outlined text-[28px]">medication</span>
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-headline font-bold text-base text-on-surface">No Active Medicines</h4>
+              <p className="text-xs text-on-surface-variant max-w-xs">
+                You have not added any medicines yet. Tap "Add Medicine" to track doses, schedules, and stock.
+              </p>
+            </div>
+            <button
+              onClick={onOpenAddMedicine}
+              type="button"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all"
+            >
+              <span className="material-symbols-outlined text-[16px]">add</span>
+              <span>Add Medicine</span>
+            </button>
+          </div>
+        ) : (
+          activeMedicines.map((med) => {
+            const isLowStock = med.remainingQuantity <= med.refillTrigger;
+            const isFixed = med.isFixedDuration;
+            const completionPct = isFixed
+              ? Math.min(100, Math.round(((med.currentDay || 4) / (med.durationDays || 7)) * 100))
+              : med.adherenceRate;
 
-          // Rail color
-          let railColor = 'bg-primary';
-          let iconBg = 'bg-primary/10 text-primary';
-          if (med.name.toLowerCase().includes('amoxicillin')) {
-            railColor = 'bg-error';
-            iconBg = 'bg-error-container text-on-error-container';
-          } else if (med.name.toLowerCase().includes('atorvastatin')) {
-            railColor = 'bg-secondary';
-            iconBg = 'bg-secondary-container text-on-secondary-container';
-          } else if (med.name.toLowerCase().includes('metformin')) {
-            railColor = 'bg-tertiary';
-            iconBg = 'bg-tertiary-fixed text-on-tertiary-fixed';
-          }
+            // Rail color
+            let railColor = 'bg-primary';
+            let iconBg = 'bg-primary/10 text-primary';
+            if (isLowStock) {
+              railColor = 'bg-error';
+              iconBg = 'bg-error-container text-on-error-container';
+            } else if (med.form === 'capsule' || med.form === 'injection') {
+              railColor = 'bg-secondary';
+              iconBg = 'bg-secondary-container text-on-secondary-container';
+            } else if (med.form === 'liquid' || med.form === 'drops') {
+              railColor = 'bg-tertiary';
+              iconBg = 'bg-tertiary-fixed text-on-tertiary-fixed';
+            }
 
           return (
             <article
@@ -434,7 +455,8 @@ export const MedicinesTab: React.FC<MedicinesTabProps> = ({
               </div>
             </article>
           );
-        })}
+        })
+      )}
       </div>
 
       {/* Past & Completed Courses Accordion */}

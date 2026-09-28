@@ -19,14 +19,12 @@ export const AddReportModal: React.FC<AddReportModalProps> = ({
 
   const [title, setTitle] = useState('');
   const [reportType, setReportType] = useState<TestReport['reportType']>('blood');
-  const [facility, setFacility] = useState('Quest Diagnostics');
-  const [doctorName, setDoctorName] = useState('Dr. Sarah Collins, MD');
+  const [facility, setFacility] = useState('');
+  const [doctorName, setDoctorName] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [summary, setSummary] = useState('');
   const [flag, setFlag] = useState<TestReport['flag']>('normal');
-  const [fileUrl, setFileUrl] = useState<string>(
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuBHjyE7LWXZ4VQQT2vmwGd3kbZ2EIhsX5yItNqh7FM9Uy7M6s50LnS8kdrsXt90y44sar04mVv3-9phPhmuiW48SsPfIYNLP9rfp2-PVYVe6U4gOq58ye65tib00M7ygOq3Ii8AyfiegxmvDh05kdrItJjxCzLDXFglDhtStUfoFq-zs-AqTCkkh_wYxStsJ5ECiwt1NlTUyhmcOhBrRgIHVC5ZVfG2jVTdHxMdR7UEDE1gEUwFTRch'
-  );
+  const [fileUrl, setFileUrl] = useState<string>('');
   const [hasCustomAttachment, setHasCustomAttachment] = useState<boolean>(false);
   const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
 

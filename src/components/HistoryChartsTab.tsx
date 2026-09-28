@@ -80,23 +80,43 @@ export const HistoryChartsTab: React.FC<HistoryChartsTabProps> = ({
 
   // Overall active adherence rate
   const overallActiveAdherence = useMemo(() => {
-    if (patientActiveMeds.length === 0) return 90;
-    const total = patientActiveMeds.reduce((acc, m) => acc + (m.adherenceRate || 85), 0);
+    if (patientActiveMeds.length === 0) return 0;
+    const total = patientActiveMeds.reduce((acc, m) => acc + (m.adherenceRate || 0), 0);
     return Math.round(total / patientActiveMeds.length);
   }, [patientActiveMeds]);
 
   // Weekly data (Day by Day adherence for past 7 days)
   const weeklyData = useMemo(() => {
-    // Generate realistic adherence profile
-    const days = [
-      { day: 'Mon', fullDate: 'Oct 18', rate: 100, taken: 4, missed: 0, scheduled: 4 },
-      { day: 'Tue', fullDate: 'Oct 19', rate: 100, taken: 4, missed: 0, scheduled: 4 },
-      { day: 'Wed', fullDate: 'Oct 20', rate: 75, taken: 3, missed: 1, scheduled: 4 },
-      { day: 'Thu', fullDate: 'Oct 21', rate: 100, taken: 5, missed: 0, scheduled: 5 },
-      { day: 'Fri', fullDate: 'Oct 22', rate: 100, taken: 5, missed: 0, scheduled: 5 },
-      { day: 'Sat', fullDate: 'Oct 23', rate: 80, taken: 4, missed: 1, scheduled: 5 },
-      { day: 'Sun', fullDate: 'Oct 24', rate: 67, taken: 4, missed: 2, scheduled: 6, isToday: true },
-    ];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    if (patientActiveMeds.length === 0) {
+      return Array.from({ length: 7 }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        return {
+          day: dayNames[d.getDay()],
+          fullDate: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          rate: 0,
+          taken: 0,
+          missed: 0,
+          scheduled: 0,
+          isToday: i === 6,
+        };
+      });
+    }
+
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return {
+        day: dayNames[d.getDay()],
+        fullDate: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        rate: 100,
+        taken: 3,
+        missed: 0,
+        scheduled: 3,
+        isToday: i === 6,
+      };
+    });
 
     if (!selectedMed) return days;
 
@@ -115,7 +135,7 @@ export const HistoryChartsTab: React.FC<HistoryChartsTabProps> = ({
         scheduled: 3,
       };
     });
-  }, [selectedMed]);
+  }, [selectedMed, patientActiveMeds]);
 
   // Monthly data (Past 6 Months & 4 Weeks)
   const monthlyData = useMemo(() => {
@@ -702,10 +722,10 @@ export const HistoryChartsTab: React.FC<HistoryChartsTabProps> = ({
             </div>
             <div className="flex-1">
               <h5 className="font-headline font-bold text-xs text-on-surface">
-                Anchor Evening Metformin to Dinner
+                Anchor Evening Doses to Meal Routines
               </h5>
               <p className="text-[11px] text-on-surface-variant mt-0.5">
-                Rather than an arbitrary 7:00 PM alarm, set reminders tied to your meal routine or place pills in a visible kitchen dispenser.
+                Rather than an arbitrary evening alarm, set reminders tied to your dinner routine or place pills in a visible organizer.
               </p>
             </div>
           </div>

@@ -90,7 +90,7 @@ define(['./workbox-afac4cd2'], (function (workbox) { 'use strict';
     "revision": "837685070e23b4d03df2bc7f7e2674a3"
   }, {
     "url": "index.html",
-    "revision": "f493f96edd785c96c4f14685e7cc8e7d"
+    "revision": "4d3f0bcd76a458f641b8c73144f0f1dc"
   }, {
     "url": "icon.svg",
     "revision": "4f2f7b9c93042c6ed377239858d6d44d"
@@ -107,10 +107,10 @@ define(['./workbox-afac4cd2'], (function (workbox) { 'use strict';
     "url": "assets/react-vendor-51wk-8wU.js",
     "revision": null
   }, {
-    "url": "assets/index-CFN9v1Vz.css",
+    "url": "assets/index-C0hxgTRl.css",
     "revision": null
   }, {
-    "url": "assets/index-8C3eipem.js",
+    "url": "assets/index-BIewNkia.js",
     "revision": null
   }, {
     "url": "assets/firebase-vendor-Dew-75XW.js",

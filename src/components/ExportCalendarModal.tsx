@@ -32,7 +32,7 @@ export const ExportCalendarModal: React.FC<ExportCalendarModalProps> = ({
   // Available medicines for selected patient (or all if selected)
   const currentPatientMeds = medicines.filter((m) => {
     if (selectedPatientId === 'all') return true;
-    return m.patientId === selectedPatientId || (!m.patientId && selectedPatientId === 'sarah');
+    return m.patientId === selectedPatientId || (!m.patientId && selectedPatientId === profiles[0]?.id);
   });
 
   // Selected medication IDs

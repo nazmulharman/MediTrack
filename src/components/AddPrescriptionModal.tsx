@@ -17,17 +17,15 @@ export const AddPrescriptionModal: React.FC<AddPrescriptionModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const [doctorName, setDoctorName] = useState('Dr. Marcus Vance, MD');
-  const [specialty, setSpecialty] = useState('ENT Specialist');
-  const [clinic, setClinic] = useState('Apex Sinus & Hearing Clinic');
+  const [doctorName, setDoctorName] = useState('');
+  const [specialty, setSpecialty] = useState('');
+  const [clinic, setClinic] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [medicineNamesInput, setMedicineNamesInput] = useState('Amoxicillin 500mg, Fluticasone Nasal Spray');
-  const [diagnosisNotes, setDiagnosisNotes] = useState('Acute bacterial rhinosinusitis. Complete full course.');
-  const [pharmacy, setPharmacy] = useState('CVS Pharmacy #4128');
-  const [refillsRemaining, setRefillsRemaining] = useState<number>(1);
-  const [photoUrl, setPhotoUrl] = useState<string>(
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuB9NH81i_mh13YEoZeDKVK8QkskiYTrbGTbRS_NLmkE6fA2aP-h8ybrxF_1ZglrZbhAXL3aCtb8rq6Dec3Kg8sDK_srJ9LdhNRZ-oz7OYo6hysVvTXzEGedy05spJAHvvrYUFzL2ZFlDO_sjsbQUbA16oXP0FQefohElBU8nebDMBXgQ__I5VTJwlu3hu45aPBFBlIP_VLdnkTR7LBcue6ZmQ9c_tP1z38E_00C3utVxDbXnD53pBMT'
-  );
+  const [medicineNamesInput, setMedicineNamesInput] = useState('');
+  const [diagnosisNotes, setDiagnosisNotes] = useState('');
+  const [pharmacy, setPharmacy] = useState('');
+  const [refillsRemaining, setRefillsRemaining] = useState<number>(0);
+  const [photoUrl, setPhotoUrl] = useState<string>('');
   const [hasCustomPhoto, setHasCustomPhoto] = useState<boolean>(false);
   const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string>('');

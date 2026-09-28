@@ -58,7 +58,20 @@ export default function App() {
   // Core Data with localStorage persistence (checks meditrack_* then legacy dosekeeper_*)
   const [profiles, setProfiles] = useState<PatientProfile[]>(() => {
     const saved = localStorage.getItem('meditrack_profiles') || localStorage.getItem('dosekeeper_profiles');
-    return saved ? JSON.parse(saved) : INITIAL_PROFILES;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.some((p: PatientProfile) => p.id === 'sarah')) {
+          localStorage.removeItem('meditrack_profiles');
+          localStorage.removeItem('dosekeeper_profiles');
+          return INITIAL_PROFILES;
+        }
+        return parsed.length > 0 ? parsed : INITIAL_PROFILES;
+      } catch {
+        return INITIAL_PROFILES;
+      }
+    }
+    return INITIAL_PROFILES;
   });
 
   const [activeProfile, setActiveProfile] = useState<PatientProfile>(() => {
@@ -67,32 +80,110 @@ export default function App() {
 
   const [medicines, setMedicines] = useState<Medicine[]>(() => {
     const saved = localStorage.getItem('meditrack_medicines') || localStorage.getItem('dosekeeper_medicines');
-    return saved ? JSON.parse(saved) : INITIAL_MEDICINES;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.some((m: Medicine) => m.id === 'med-amoxicillin' || m.id === 'med-atorvastatin')) {
+          localStorage.removeItem('meditrack_medicines');
+          localStorage.removeItem('dosekeeper_medicines');
+          return INITIAL_MEDICINES;
+        }
+        return parsed;
+      } catch {
+        return INITIAL_MEDICINES;
+      }
+    }
+    return INITIAL_MEDICINES;
   });
 
   const [doses, setDoses] = useState<DoseItem[]>(() => {
     const saved = localStorage.getItem('meditrack_doses') || localStorage.getItem('dosekeeper_doses');
-    return saved ? JSON.parse(saved) : INITIAL_DOSES;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.some((d: DoseItem) => d.id === 'dose-1' || d.medicineId === 'med-amoxicillin')) {
+          localStorage.removeItem('meditrack_doses');
+          localStorage.removeItem('dosekeeper_doses');
+          return INITIAL_DOSES;
+        }
+        return parsed;
+      } catch {
+        return INITIAL_DOSES;
+      }
+    }
+    return INITIAL_DOSES;
   });
 
   const [prescriptions, setPrescriptions] = useState<PrescriptionRecord[]>(() => {
     const saved = localStorage.getItem('meditrack_prescriptions') || localStorage.getItem('dosekeeper_prescriptions');
-    return saved ? JSON.parse(saved) : INITIAL_PRESCRIPTIONS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.some((p: PrescriptionRecord) => p.id === 'rx-1' || p.id === 'rx-2')) {
+          localStorage.removeItem('meditrack_prescriptions');
+          localStorage.removeItem('dosekeeper_prescriptions');
+          return INITIAL_PRESCRIPTIONS;
+        }
+        return parsed;
+      } catch {
+        return INITIAL_PRESCRIPTIONS;
+      }
+    }
+    return INITIAL_PRESCRIPTIONS;
   });
 
   const [testReports, setTestReports] = useState<TestReport[]>(() => {
     const saved = localStorage.getItem('meditrack_reports') || localStorage.getItem('dosekeeper_reports');
-    return saved ? JSON.parse(saved) : INITIAL_TEST_REPORTS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.some((r: TestReport) => r.id === 'lab-1' || r.id === 'lab-2')) {
+          localStorage.removeItem('meditrack_reports');
+          localStorage.removeItem('dosekeeper_reports');
+          return INITIAL_TEST_REPORTS;
+        }
+        return parsed;
+      } catch {
+        return INITIAL_TEST_REPORTS;
+      }
+    }
+    return INITIAL_TEST_REPORTS;
   });
 
   const [visits, setVisits] = useState<DoctorVisit[]>(() => {
     const saved = localStorage.getItem('meditrack_visits') || localStorage.getItem('dosekeeper_visits');
-    return saved ? JSON.parse(saved) : INITIAL_VISITS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.some((v: DoctorVisit) => v.id === 'visit-1')) {
+          localStorage.removeItem('meditrack_visits');
+          localStorage.removeItem('dosekeeper_visits');
+          return INITIAL_VISITS;
+        }
+        return parsed;
+      } catch {
+        return INITIAL_VISITS;
+      }
+    }
+    return INITIAL_VISITS;
   });
 
   const [vitals, setVitals] = useState<HealthVitalLog[]>(() => {
     const saved = localStorage.getItem('meditrack_vitals') || localStorage.getItem('dosekeeper_vitals');
-    return saved ? JSON.parse(saved) : INITIAL_VITALS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.some((v: HealthVitalLog) => v.id === 'vital-bp-1')) {
+          localStorage.removeItem('meditrack_vitals');
+          localStorage.removeItem('dosekeeper_vitals');
+          return INITIAL_VITALS;
+        }
+        return parsed;
+      } catch {
+        return INITIAL_VITALS;
+      }
+    }
+    return INITIAL_VITALS;
   });
 
   const [settings, setSettings] = useState<NotificationSettings>(() => {
@@ -545,7 +636,7 @@ export default function App() {
 
   // Filter doses for active profile
   const currentProfileDoses = doses.filter(
-    (d) => d.patientId === activeProfile.id || (!d.patientId && activeProfile.id === 'sarah')
+    (d) => d.patientId === activeProfile.id || (!d.patientId && (activeProfile.isPrimary || activeProfile.id === profiles[0]?.id))
   );
 
   const hasLowStockAlert = medicines.some(

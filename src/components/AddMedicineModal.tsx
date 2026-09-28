@@ -29,25 +29,25 @@ export const AddMedicineModal: React.FC<AddMedicineModalProps> = ({
 
   // Form State
   const [name, setName] = useState<string>(
-    editMedicine?.name || prefilledData?.name || 'Amoxicillin'
+    editMedicine?.name || prefilledData?.name || ''
   );
   const [form, setForm] = useState<DosageForm>(
     editMedicine?.form || prefilledData?.form || 'tablet'
   );
   const [strength, setStrength] = useState<string>(
-    editMedicine?.strength || prefilledData?.strength || '500'
+    editMedicine?.strength || prefilledData?.strength || ''
   );
   const [strengthUnit, setStrengthUnit] = useState<string>(
     editMedicine?.strengthUnit || prefilledData?.strengthUnit || 'mg'
   );
   const [frequency, setFrequency] = useState<string>(
-    editMedicine?.frequency || prefilledData?.frequency || '3 times daily'
+    editMedicine?.frequency || prefilledData?.frequency || '1x daily (morning)'
   );
   const [mealTiming, setMealTiming] = useState<MealTiming>(
     editMedicine?.mealTiming || prefilledData?.mealTiming || 'after_food'
   );
   const [isFixedDuration, setIsFixedDuration] = useState<boolean>(
-    editMedicine ? editMedicine.isFixedDuration : true
+    editMedicine ? editMedicine.isFixedDuration : false
   );
   const [durationDays, setDurationDays] = useState<number>(
     editMedicine?.durationDays || prefilledData?.durationDays || 7
@@ -60,7 +60,7 @@ export const AddMedicineModal: React.FC<AddMedicineModalProps> = ({
 
   // Total quantity and consumed quantity
   const [totalQuantity, setTotalQuantity] = useState<number>(
-    editMedicine?.totalQuantity || prefilledData?.totalQuantity || 21
+    editMedicine?.totalQuantity || prefilledData?.totalQuantity || 30
   );
   const [consumedQuantity, setConsumedQuantity] = useState<number>(
     editMedicine?.consumedQuantity !== undefined
@@ -71,13 +71,13 @@ export const AddMedicineModal: React.FC<AddMedicineModalProps> = ({
   );
 
   const [refillTrigger, setRefillTrigger] = useState<number>(
-    editMedicine?.refillTrigger || prefilledData?.refillTrigger || 4
+    editMedicine?.refillTrigger || prefilledData?.refillTrigger || 5
   );
   const [startDate, setStartDate] = useState<string>(
-    editMedicine?.startDate || '2024-10-21'
+    editMedicine?.startDate || new Date().toISOString().split('T')[0]
   );
   const [scheduledTimes, setScheduledTimes] = useState<string[]>(
-    editMedicine?.scheduledTimes || prefilledData?.scheduledTimes || ['08:00', '14:00', '20:00']
+    editMedicine?.scheduledTimes || prefilledData?.scheduledTimes || ['08:00']
   );
   const [isEditingTimes, setIsEditingTimes] = useState<boolean>(false);
   const [stopReminderEnabled, setStopReminderEnabled] = useState<boolean>(
@@ -87,7 +87,7 @@ export const AddMedicineModal: React.FC<AddMedicineModalProps> = ({
     editMedicine?.instructions || ''
   );
   const [doctorName, setDoctorName] = useState<string>(
-    editMedicine?.doctorName || prefilledData?.doctorName || 'Dr. Marcus Vance, MD'
+    editMedicine?.doctorName || prefilledData?.doctorName || ''
   );
 
   // Attached Document / Rx Photo State
