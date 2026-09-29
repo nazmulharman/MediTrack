@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PatientProfile, PatientRelation } from '../types/medicine';
 import { CameraCaptureModal } from './CameraCaptureModal';
+import { ImageCropModal } from './ImageCropModal';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -47,6 +48,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   // Camera modal state
   const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
+  const [isCropModalOpen, setIsCropModalOpen] = useState<boolean>(false);
 
   // Auto-fill shortName from name if user hasn't typed a custom short name
   const handleNameChange = (val: string) => {
@@ -239,14 +241,24 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 </button>
 
                 {avatarUrl && (
-                  <button
-                    type="button"
-                    onClick={() => setAvatarUrl('')}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-error-container/40 text-error text-xs font-semibold hover:bg-error-container/70 transition-all"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">delete</span>
-                    <span>Remove</span>
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setIsCropModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold transition-all border border-primary/20"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">crop</span>
+                      <span>Crop Photo</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAvatarUrl('')}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-error-container/40 text-error text-xs font-semibold hover:bg-error-container/70 transition-all"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">delete</span>
+                      <span>Remove</span>
+                    </button>
+                  </>
                 )}
               </div>
 
@@ -424,6 +436,21 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
           onCapture={handleCameraCapture}
           title="Take Profile Photo"
           documentTypeHint="Center face within frame for your care avatar"
+        />
+      )}
+
+      {/* Image Cropper Modal for Avatar */}
+      {isCropModalOpen && avatarUrl && (
+        <ImageCropModal
+          isOpen={isCropModalOpen}
+          onClose={() => setIsCropModalOpen(false)}
+          imageUrl={avatarUrl}
+          onCropComplete={(croppedData) => {
+            setAvatarUrl(croppedData);
+            setIsCropModalOpen(false);
+          }}
+          title="Crop Profile Avatar"
+          initialAspectRatio="square"
         />
       )}
     </>

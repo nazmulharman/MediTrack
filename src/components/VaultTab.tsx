@@ -20,7 +20,7 @@ interface VaultTabProps {
   visits: DoctorVisit[];
   profiles: PatientProfile[];
   vitals: HealthVitalLog[];
-  onOpenZoom: (title: string, subtitle: string, imageUrl: string) => void;
+  onOpenZoom: (title: string, subtitle: string, imageUrl: string, pages?: string[]) => void;
   onOpenScanner: () => void;
   onOpenAddReport: () => void;
   onOpenAddPrescription?: () => void;
@@ -143,6 +143,7 @@ export const VaultTab: React.FC<VaultTabProps> = ({
   const allGalleryItems: GalleryItem[] = [
     ...filteredPrescriptions.map((rx) => {
       const patient = profiles.find((p) => p.id === rx.patientId);
+      const rxPages = rx.pages && rx.pages.length > 0 ? rx.pages : [rx.photoUrl || DEFAULT_RX_IMAGE];
       return {
         id: rx.id,
         type: 'prescription' as const,
@@ -151,7 +152,8 @@ export const VaultTab: React.FC<VaultTabProps> = ({
         date: rx.date,
         patientId: rx.patientId,
         patientName: patient?.name || rx.patientId,
-        imageUrl: rx.photoUrl || DEFAULT_RX_IMAGE,
+        imageUrl: rxPages[0] || DEFAULT_RX_IMAGE,
+        pages: rxPages,
         badgeLabel: 'Prescription',
         badgeIcon: 'prescriptions',
         badgeColorCls: 'bg-primary-container text-on-primary-container',
@@ -173,6 +175,8 @@ export const VaultTab: React.FC<VaultTabProps> = ({
         ? 'bg-primary-fixed text-on-primary-fixed-variant'
         : 'bg-secondary-fixed text-on-secondary-fixed-variant';
 
+      const labPages = lab.pages && lab.pages.length > 0 ? lab.pages : (lab.fileUrl ? [lab.fileUrl] : []);
+
       return {
         id: lab.id,
         type: 'report' as const,
@@ -181,7 +185,8 @@ export const VaultTab: React.FC<VaultTabProps> = ({
         date: lab.date,
         patientId: lab.patientId,
         patientName: patient?.name || lab.patientId,
-        imageUrl: lab.fileUrl || DEFAULT_LAB_IMAGE,
+        imageUrl: labPages[0] || lab.fileUrl || DEFAULT_LAB_IMAGE,
+        pages: labPages,
         badgeLabel:
           lab.reportType === 'blood'
             ? 'Blood Test'
@@ -562,6 +567,12 @@ export const VaultTab: React.FC<VaultTabProps> = ({
                         </span>
 
                         <div className="flex items-center gap-1">
+                          {item.pages && item.pages.length > 1 && (
+                            <span className="px-2 py-0.5 rounded-full bg-primary/90 text-on-primary text-[10px] font-bold backdrop-blur-md flex items-center gap-0.5 shadow-xs">
+                              <span className="material-symbols-outlined text-[12px]">collections_bookmark</span>
+                              <span>{item.pages.length} Pages</span>
+                            </span>
+                          )}
                           {isHighlighted && (
                             <span className="px-2 py-0.5 rounded-full bg-primary text-on-primary text-[10px] font-bold animate-bounce shadow">
                               ✨ Just Added
@@ -786,7 +797,8 @@ export const VaultTab: React.FC<VaultTabProps> = ({
                               onOpenZoom(
                                 `${rx.doctorName} - ${rx.specialty}`,
                                 `${rx.clinic} • ${rx.date}`,
-                                rx.photoUrl || DEFAULT_RX_IMAGE
+                                rx.photoUrl || DEFAULT_RX_IMAGE,
+                                rx.pages
                               )
                             }
                           >
@@ -858,7 +870,8 @@ export const VaultTab: React.FC<VaultTabProps> = ({
                               onOpenZoom(
                                 `${rx.doctorName} - ${rx.specialty}`,
                                 `${rx.clinic} • ${rx.date}`,
-                                rx.photoUrl || DEFAULT_RX_IMAGE
+                                rx.photoUrl || DEFAULT_RX_IMAGE,
+                                rx.pages
                               )
                             }
                             className="text-primary font-bold hover:underline flex items-center gap-1"
@@ -922,7 +935,8 @@ export const VaultTab: React.FC<VaultTabProps> = ({
                               onOpenZoom(
                                 lab.title,
                                 `${lab.facility} • ${lab.date}`,
-                                lab.fileUrl || DEFAULT_LAB_IMAGE
+                                lab.fileUrl || DEFAULT_LAB_IMAGE,
+                                lab.pages
                               )
                             }
                           >
@@ -983,7 +997,8 @@ export const VaultTab: React.FC<VaultTabProps> = ({
                               onOpenZoom(
                                 lab.title,
                                 `${lab.facility} • ${lab.date}`,
-                                lab.fileUrl || DEFAULT_LAB_IMAGE
+                                lab.fileUrl || DEFAULT_LAB_IMAGE,
+                                lab.pages
                               )
                             }
                             className="text-primary font-bold hover:underline flex items-center gap-1"

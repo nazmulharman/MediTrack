@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { ImageCropModal } from './ImageCropModal';
 
 export interface GalleryItem {
   id: string;
@@ -9,6 +10,7 @@ export interface GalleryItem {
   patientId: string;
   patientName?: string;
   imageUrl: string;
+  pages?: string[];
   badgeLabel: string;
   badgeIcon: string;
   badgeColorCls: string;
@@ -27,6 +29,7 @@ interface DocumentGalleryModalProps {
   items: GalleryItem[];
   initialIndex?: number;
   onDeleteItem?: (id: string, type: 'prescription' | 'report') => void;
+  onUpdateItemImage?: (id: string, newImageUrl: string, updatedPages?: string[]) => void;
 }
 
 export const DocumentGalleryModal: React.FC<DocumentGalleryModalProps> = ({
@@ -35,28 +38,35 @@ export const DocumentGalleryModal: React.FC<DocumentGalleryModalProps> = ({
   items,
   initialIndex = 0,
   onDeleteItem,
+  onUpdateItemImage,
 }) => {
   const [currentIndex, setCurrentIndex] = useState<number>(initialIndex);
+  const [activePageIndex, setActivePageIndex] = useState<number>(0);
   const [scale, setScale] = useState<number>(1.0);
   const [rotation, setRotation] = useState<number>(0);
   const [showDetailsDrawer, setShowDetailsDrawer] = useState<boolean>(true);
   const [copiedNotification, setCopiedNotification] = useState<boolean>(false);
+  const [isCropOpen, setIsCropOpen] = useState<boolean>(false);
 
   // Sync index when initialIndex changes or modal opens
   useEffect(() => {
     if (isOpen) {
       const safeIndex = Math.max(0, Math.min(items.length - 1, initialIndex));
       setCurrentIndex(safeIndex);
+      setActivePageIndex(0);
       setScale(1.0);
       setRotation(0);
     }
   }, [isOpen, initialIndex, items.length]);
 
   const currentItem: GalleryItem | undefined = items[currentIndex];
+  const activePages = currentItem?.pages && currentItem.pages.length > 0 ? currentItem.pages : (currentItem ? [currentItem.imageUrl] : []);
+  const activeImageUrl = activePages[activePageIndex] || currentItem?.imageUrl || '';
 
   const handlePrev = useCallback(() => {
     if (items.length <= 1) return;
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : items.length - 1));
+    setActivePageIndex(0);
     setScale(1.0);
     setRotation(0);
   }, [items.length]);
@@ -64,6 +74,7 @@ export const DocumentGalleryModal: React.FC<DocumentGalleryModalProps> = ({
   const handleNext = useCallback(() => {
     if (items.length <= 1) return;
     setCurrentIndex((prev) => (prev < items.length - 1 ? prev + 1 : 0));
+    setActivePageIndex(0);
     setScale(1.0);
     setRotation(0);
   }, [items.length]);
@@ -222,17 +233,42 @@ export const DocumentGalleryModal: React.FC<DocumentGalleryModalProps> = ({
         )}
 
         {/* Main Document Image Container */}
-        <div className="relative max-h-full max-w-full flex items-center justify-center overflow-hidden">
+        <div className="relative max-h-full max-w-full flex flex-col items-center justify-center overflow-hidden">
           <img
-            key={currentItem.id}
-            src={currentItem.imageUrl}
+            key={`${currentItem.id}-${activePageIndex}`}
+            src={activeImageUrl}
             alt={currentItem.title}
             draggable={false}
-            className="max-h-[65vh] sm:max-h-[72vh] max-w-[90vw] sm:max-w-[78vw] object-contain rounded-2xl shadow-2xl transition-transform duration-200 ease-out select-none border border-white/10"
+            className="max-h-[62vh] sm:max-h-[70vh] max-w-[90vw] sm:max-w-[78vw] object-contain rounded-2xl shadow-2xl transition-transform duration-200 ease-out select-none border border-white/10"
             style={{
               transform: `scale(${scale}) rotate(${rotation}deg)`,
             }}
           />
+
+          {/* Multi-page Selector within Document */}
+          {activePages.length > 1 && (
+            <div className="mt-2 flex items-center gap-1.5 p-1 rounded-full bg-black/75 backdrop-blur-md border border-white/15 shadow-lg z-30">
+              <button
+                type="button"
+                onClick={() => setActivePageIndex((p) => Math.max(0, p - 1))}
+                disabled={activePageIndex === 0}
+                className="w-6 h-6 rounded-full flex items-center justify-center text-white hover:bg-white/20 disabled:opacity-30"
+              >
+                <span className="material-symbols-outlined text-[16px]">chevron_left</span>
+              </button>
+              <span className="text-[11px] font-bold text-white px-2">
+                Page {activePageIndex + 1} of {activePages.length}
+              </span>
+              <button
+                type="button"
+                onClick={() => setActivePageIndex((p) => Math.min(activePages.length - 1, p + 1))}
+                disabled={activePageIndex === activePages.length - 1}
+                className="w-6 h-6 rounded-full flex items-center justify-center text-white hover:bg-white/20 disabled:opacity-30"
+              >
+                <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Next Button */}
@@ -247,7 +283,7 @@ export const DocumentGalleryModal: React.FC<DocumentGalleryModalProps> = ({
           </button>
         )}
 
-        {/* Floating Canvas Controls (Zoom In/Out, Reset, Rotate) */}
+        {/* Floating Canvas Controls (Zoom In/Out, Reset, Rotate, Crop) */}
         <div className="absolute top-2 sm:top-4 right-4 z-30 flex items-center gap-1 p-1 rounded-full bg-black/70 text-white backdrop-blur-md border border-white/15 shadow-xl">
           <button
             onClick={handleZoomOut}
@@ -283,6 +319,14 @@ export const DocumentGalleryModal: React.FC<DocumentGalleryModalProps> = ({
             title="Rotate 90°"
           >
             <span className="material-symbols-outlined text-[18px]">rotate_right</span>
+          </button>
+          <button
+            onClick={() => setIsCropOpen(true)}
+            type="button"
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/20 transition-all text-primary"
+            title="Crop & Align Document"
+          >
+            <span className="material-symbols-outlined text-[18px]">crop</span>
           </button>
         </div>
       </div>
@@ -446,6 +490,25 @@ export const DocumentGalleryModal: React.FC<DocumentGalleryModalProps> = ({
           })}
         </div>
       </footer>
+
+      {/* Image Crop Modal */}
+      {isCropOpen && activeImageUrl && (
+        <ImageCropModal
+          isOpen={isCropOpen}
+          onClose={() => setIsCropOpen(false)}
+          imageUrl={activeImageUrl}
+          onCropComplete={(croppedData) => {
+            if (onUpdateItemImage && currentItem) {
+              const updatedPages = [...activePages];
+              updatedPages[activePageIndex] = croppedData;
+              onUpdateItemImage(currentItem.id, croppedData, updatedPages);
+            }
+            setIsCropOpen(false);
+          }}
+          title={`Crop Document ${activePages.length > 1 ? `- Page ${activePageIndex + 1}` : ''}`}
+          initialAspectRatio="document"
+        />
+      )}
     </div>
   );
 };

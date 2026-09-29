@@ -1,6 +1,6 @@
-export type DosageForm = 'tablet' | 'capsule' | 'liquid' | 'injection' | 'drops' | 'inhaler';
+export type DosageForm = 'tablet' | 'capsule' | 'liquid' | 'injection' | 'drops' | 'inhaler' | 'syrup' | 'ointment';
 
-export type MealTiming = 'before_food' | 'after_food' | 'with_meal' | 'anytime';
+export type MealTiming = 'before_food' | 'after_food' | 'with_meal' | 'with_food' | 'anytime';
 
 export type DoseStatus = 'taken' | 'pending' | 'missed' | 'skipped' | 'snoozed';
 
@@ -97,6 +97,7 @@ export interface PrescriptionRecord {
   clinic: string;
   date: string;
   photoUrl: string;
+  pages?: string[]; // Array of multiple page data URLs or images
   linkedMedicineIds: string[];
   linkedMedicineNames: string[];
   diagnosisNotes?: string;
@@ -108,6 +109,15 @@ export interface PrescriptionRecord {
   pediatricNote?: string;
   patientWeight?: string;
   tags?: string[];
+  autoExtractedMedicines?: {
+    name: string;
+    strength?: string;
+    form?: DosageForm;
+    frequency?: string;
+    mealTiming?: MealTiming;
+    durationDays?: number;
+    instructions?: string;
+  }[];
 }
 
 export interface TestReport {
@@ -119,6 +129,7 @@ export interface TestReport {
   date: string;
   doctorName?: string;
   fileUrl?: string;
+  pages?: string[]; // Array of multiple page data URLs or images
   summary: string;
   flag: 'normal' | 'attention' | 'critical';
   metrics?: { name: string; value: string; unit?: string; referenceRange?: string; status?: 'normal' | 'high' | 'low' }[];

@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { ImageCropModal } from './ImageCropModal';
 
 interface CameraCaptureModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState<boolean>(true);
   const [capturedPreview, setCapturedPreview] = useState<string | null>(null);
+  const [isCropping, setIsCropping] = useState<boolean>(false);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [flashAnimation, setFlashAnimation] = useState<boolean>(false);
 
@@ -292,14 +294,22 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
         {/* Controls & Action Bar */}
         <div className="p-4 bg-surface-container-low border-t border-surface-container">
           {capturedPreview ? (
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleRetake}
-                className="flex-1 py-3 px-4 rounded-full bg-surface-container text-on-surface font-bold text-xs hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1.5"
+                className="py-3 px-3.5 rounded-full bg-surface-container text-on-surface font-bold text-xs hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1"
               >
                 <span className="material-symbols-outlined text-[16px]">replay</span>
-                Retake
+                <span>Retake</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCropping(true)}
+                className="py-3 px-3.5 rounded-full bg-secondary-container text-on-secondary-container font-bold text-xs hover:bg-secondary-fixed transition-colors flex items-center justify-center gap-1 shadow-2xs border border-secondary/20 active:scale-95"
+              >
+                <span className="material-symbols-outlined text-[16px]">crop</span>
+                <span>Crop / Align</span>
               </button>
               <button
                 type="button"
@@ -307,7 +317,7 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
                 className="flex-1 py-3 px-4 rounded-full bg-primary text-on-primary font-headline font-bold text-xs shadow-md hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center gap-1.5"
               >
                 <span className="material-symbols-outlined text-[18px]">check</span>
-                Attach Photo
+                <span>Attach Photo</span>
               </button>
             </div>
           ) : (
@@ -349,6 +359,21 @@ export const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({
           )}
         </div>
       </div>
+
+      {/* Image Crop Modal */}
+      {isCropping && capturedPreview && (
+        <ImageCropModal
+          isOpen={isCropping}
+          onClose={() => setIsCropping(false)}
+          imageUrl={capturedPreview}
+          onCropComplete={(croppedData) => {
+            setCapturedPreview(croppedData);
+            setIsCropping(false);
+          }}
+          title="Crop Document Photo"
+          initialAspectRatio="document"
+        />
+      )}
     </div>
   );
 };

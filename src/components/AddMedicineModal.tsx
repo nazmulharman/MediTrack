@@ -3,6 +3,7 @@ import { DosageForm, MealTiming, Medicine } from '../types/medicine';
 import { ExtractedMedicationData } from './CameraScanModal';
 import { formatFraction, roundFraction, COMMON_FRACTION_DOSES } from '../utils/fractionUtils';
 import { CameraCaptureModal } from './CameraCaptureModal';
+import { ImageCropModal } from './ImageCropModal';
 
 interface AddMedicineModalProps {
   isOpen: boolean;
@@ -95,6 +96,7 @@ export const AddMedicineModal: React.FC<AddMedicineModalProps> = ({
     editMedicine?.photoUrl || prefilledData?.photoUrl || null
   );
   const [isCameraCaptureOpen, setIsCameraCaptureOpen] = useState<boolean>(false);
+  const [isCroppingAttachedDoc, setIsCroppingAttachedDoc] = useState<boolean>(false);
 
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [feedbackMsg, setFeedbackMsg] = useState<string>('');
@@ -880,6 +882,14 @@ export const AddMedicineModal: React.FC<AddMedicineModalProps> = ({
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     type="button"
+                    onClick={() => setIsCroppingAttachedDoc(true)}
+                    className="p-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary text-xs font-bold"
+                    title="Crop Document or Strip"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">crop</span>
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setIsCameraCaptureOpen(true)}
                     className="p-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary text-xs font-bold"
                     title="Retake Photo"
@@ -931,6 +941,21 @@ export const AddMedicineModal: React.FC<AddMedicineModalProps> = ({
           onCapture={(photoData) => setAttachedDocUrl(photoData)}
           title="Photograph Prescription / Medicine Label"
           documentTypeHint="Capture paper prescription, drug carton, or blister strip"
+        />
+      )}
+
+      {/* Image Crop Modal */}
+      {isCroppingAttachedDoc && attachedDocUrl && (
+        <ImageCropModal
+          isOpen={isCroppingAttachedDoc}
+          onClose={() => setIsCroppingAttachedDoc(false)}
+          imageUrl={attachedDocUrl}
+          onCropComplete={(croppedData) => {
+            setAttachedDocUrl(croppedData);
+            setIsCroppingAttachedDoc(false);
+          }}
+          title="Crop Medicine Photo / Document"
+          initialAspectRatio="free"
         />
       )}
     </div>

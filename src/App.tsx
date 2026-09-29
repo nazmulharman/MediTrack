@@ -209,11 +209,13 @@ export default function App() {
     title: string;
     subtitle: string;
     imageUrl: string;
+    pages?: string[];
   }>({
     isOpen: false,
     title: '',
     subtitle: '',
     imageUrl: '',
+    pages: [],
   });
 
   const [isExportPDFOpen, setIsExportPDFOpen] = useState(false);
@@ -873,8 +875,8 @@ export default function App() {
             visits={visits}
             profiles={profiles}
             vitals={vitals}
-            onOpenZoom={(title, subtitle, imageUrl) =>
-              setZoomModalData({ isOpen: true, title, subtitle, imageUrl })
+            onOpenZoom={(title, subtitle, imageUrl, pages) =>
+              setZoomModalData({ isOpen: true, title, subtitle, imageUrl, pages })
             }
             onOpenScanner={() => setIsScannerOpen(true)}
             onOpenAddReport={() => setIsAddReportOpen(true)}
@@ -1073,6 +1075,7 @@ export default function App() {
                 title: `${selectedMedForDetail.name} ${selectedMedForDetail.strength}${selectedMedForDetail.strengthUnit}`,
                 subtitle: `Attached Prescription / Document • ${selectedMedForDetail.doctorName || 'Prescribed'}`,
                 imageUrl: selectedMedForDetail.photoUrl,
+                pages: [selectedMedForDetail.photoUrl],
               });
               return;
             }
@@ -1083,6 +1086,7 @@ export default function App() {
                 title: `${rx.doctorName} - ${rx.specialty}`,
                 subtitle: rx.date,
                 imageUrl: rx.photoUrl,
+                pages: rx.pages && rx.pages.length > 0 ? rx.pages : [rx.photoUrl],
               });
             }
           }}
@@ -1096,6 +1100,7 @@ export default function App() {
           title={zoomModalData.title}
           subtitle={zoomModalData.subtitle}
           imageUrl={zoomModalData.imageUrl}
+          pages={zoomModalData.pages}
         />
       )}
 
