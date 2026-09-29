@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type TabType = 'today' | 'medicines' | 'history' | 'settings';
+export type TabType = 'today' | 'medicines' | 'vault' | 'history' | 'settings';
 
 interface BottomNavProps {
   currentTab: TabType;
@@ -24,6 +24,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       label: 'Medicines',
       icon: 'medication',
       badge: hasRefillAlert,
+    },
+    {
+      id: 'vault' as TabType,
+      label: 'Vault',
+      icon: 'folder_supervised',
     },
     {
       id: 'history' as TabType,
